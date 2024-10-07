@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "polus-aithena-common"
-version = "0.1.0"
+name = "polus-aithena-oaipmhclient"
+version = "0.2.0-dev0"
 description = ""
 authors = ["Antoine Gerardin <antoine.gerardin@nih.gov>"]
 readme = "README.md"
@@ -8,10 +8,10 @@ packages = [{include = "polus", from = "src"}]
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
-python-dotenv = "^1.0.1"
-typer = "^0.12.5"
-tqdm = "^4.66.5"
-pydantic = "^2.9.0"
+polus-aithena-common = {path= "../../common", develop=true}
+xsdata-pydantic = "^24.5"
+requests = "^2.32.3"
+tenacity = "^9.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.8.0"
@@ -19,6 +19,7 @@ bump2version = "^1.0.1"
 pytest = "^8.3.2"
 pytest-sugar = "^1.0.0"
 pytest-xdist = "^3.6.1"
+
 
 [build-system]
 requires = ["poetry-core"]
