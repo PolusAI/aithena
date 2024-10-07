@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "aithena-template"
+version = "0.1.0"
+description = ""
+authors = ["Antoine Gerardin <antoine.gerardin@nih.gov>"]
+readme = "README.md"
+packages = [{include = "aithena_template", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.13"
+toml = "^0.10.2"
+typer = "0.7"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+aithena_template = "aithena_template.build:app"
