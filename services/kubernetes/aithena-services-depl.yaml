@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aithena-services-010
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aithena-services-010
+  template:
+    metadata:
+      labels:
+        app: aithena-services-010
+    spec:        
+      volumes:
+        - name: task-pv-volume-aithena-services-010
+          persistentVolumeClaim:
+            claimName: task-pv-claim-aithena-services-0.1.0
+      containers:
+      - name: aithena-services
+        image: camilovelezr/aithena-services:0.1.0-dev1
+        env:
+        - name: OLLAMA_HOST
+          value: "http://ollama-service.default.svc.cluster.local:11434"
+        ports:
+        - containerPort: 80
+        envFrom:
+          - secretRef:
+              name: aithena-services-secret-0.1.0
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "1"
+          limits:
+            memory: "2Gi"
+            cpu: "1"

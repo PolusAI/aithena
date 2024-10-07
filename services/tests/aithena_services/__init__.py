@@ -1,0 +1,3 @@
+"""
+Test Aithena-Services API.
+"""
