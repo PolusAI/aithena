@@ -2,5 +2,5 @@
     "project_name": "jobname-job",
     "author_name": "First Lastname",
     "author_email": "first.lastname@provider.com",
-    "packages": ["aithena.jobs.jobname"]
+    "packages": ["polus.aithena.jobs.jobname"]
 }
