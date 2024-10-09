@@ -1,5 +1,17 @@
 """Generated with xsdata-pydantic."""
 
+## Prevent warnings from being displayed
+## as MetadataFormatType as a schema attribute
+import warnings
+
+# Suppress specific warning
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    message='Field name "schema" in "MetadataFormatType" shadows an attribute in parent "BaseModel"',
+)
+
+## This is the generated code
 from enum import Enum
 from typing import Optional
 from typing import Union

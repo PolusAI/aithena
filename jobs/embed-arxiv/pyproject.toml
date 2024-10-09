@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "arxiv-abstract-ingestion-tool"
+version = "0.1.0-dev0"
+description = ""
+authors = ["Antoine Gerardin <antoine.gerardin@nih.gov>"]
+readme = "README.md"
+packages = [{include = "polus", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+polus-aithena-common = {path= "../../common", develop=true}
+polus-aithena-oaipmhclient = {path= "../oaipmh-client", develop=true}
+qdrant-client = "^1.11.1"
+xsdata-pydantic = "^24.5"
+requests = "^2.32.3"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.8.0"
+bump2version = "^1.0.1"
+pytest = "^8.3.2"
+pytest-sugar = "^1.0.0"
+pytest-xdist = "^3.6.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]
