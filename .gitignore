@@ -1,9 +1,13 @@
+#vscode config
 .vscode
-**/.venv/
-.mypy_cache
+
+# environment file
 .env
 
-#logs 
+# venv environment
+**/.venv/
+
+#logs
 *.out
 *.log
 
@@ -11,6 +15,7 @@
 poetry.lock
 
 # Byte-compiled / optimized / DLL files
+.mypy_cache
 __pycache__
 *.py[cod]
 *$py.class
@@ -184,4 +189,3 @@ node_modules
 
 # secrets
 **/**-secret.yaml
-
