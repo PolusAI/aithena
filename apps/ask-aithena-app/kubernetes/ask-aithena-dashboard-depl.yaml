@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ask-aithena-dashboard-dev1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ask-aithena-dashboard-dev1
+  template:
+    metadata:
+      labels:
+        app: ask-aithena-dashboard-dev1
+    spec:        
+      containers:
+      - name: ask-aithena-dashboard
+        image: camilovelezr/aithena-ask-aithena-dashboard:0.1.0-dev1
+        ports:
+        - containerPort: 8765
+        env:
+          - name: ASK_AITHENA_API_URL
+            value: "http://ask-aithena-agent-service-dev1.default.svc.cluster.local:8000"
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "1"
+          limits:
+            memory: "4Gi"
+            cpu: "1"

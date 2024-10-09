@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "ask-aithena-app"
+version = "0.1.0-dev2"
+description = ""
+authors = ["Camilo Velez <camilo.velez@axleinfo.com>, Antoine  <antoine.gerardin@nih.gov>"]
+readme = "README.md"
+packages = [{include = "polus", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+polus-aithena-common = {path= "../../common", develop=true}
+tqdm = "^4.64.1"
+solara = "^1.39.0"
+markdown = "^3.7"
+typer = "^0.12.5"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.8.0"
+bump2version = "^1.0.1"
+pytest = "^8.3.2"
+pytest-sugar = "^1.0.0"
+pytest-xdist = "^3.6.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]
