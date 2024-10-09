@@ -1,22 +1,27 @@
 FROM python:3.11-slim
 
-# environment variables
-ENV AITHENA_LOG_LEVEL="DEBUG"
-ENV EXEC_DIR="/opt/executables"
 # Work directory defined in the base container
+ENV EXEC_DIR="/opt/executables"
 WORKDIR ${EXEC_DIR}
 
-# TODO: Change the tool_dir to the tool directory
-ENV TOOL_DIR="document-services/oai-pmh-client"
+# TOOL_DIR Argument to the Dockerfile
+ARG TOOL_DIR="."
 
 # Copy the repository into the container
 RUN mkdir aithena
-COPY . ${EXEC_DIR}/aithena
+COPY $TOOL_DIR ${EXEC_DIR}/aithena/${TOOL_DIR}
+
+# Tool dependencies
+
+## --- BEGIN: Copy project dependencies  ---
+COPY common ${EXEC_DIR}/aithena/common
+COPY jobs/oaipmh-client ${EXEC_DIR}/aithena/jobs/oaipmh-client
+## --- END: Copy project dependencies ---
 
 # Install the tool
-RUN pip3 install "${EXEC_DIR}/aithena/${TOOL_DIR}" --no-cache-dir
+RUN pip3 install "${EXEC_DIR}/aithena/${TOOL_DIR}"
 
-# Set the entrypoint
-# TODO: Change the entrypoint to the tool entrypoint
-ENTRYPOINT ["python3", "-m", "polus.aithena.oai_pmh_client"]
+## --- BEGIN: configure the container ---
+ENV AITHENA_LOG_LEVEL="DEBUG"
+ENTRYPOINT ["python3", "-m", "polus.aithena.oaipmh_client"]
 CMD ["--help"]

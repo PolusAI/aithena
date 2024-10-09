@@ -18,14 +18,18 @@ def main(
     url: str = typer.Option(
         "https://export.arxiv.org/oai2",
         "--url",
-        help="service url",
+        help="service url to pull oaipmh records from. Default to 'https://export.arxiv.org/oai2'.",
     ),
     from_: datetime.datetime = typer.Option(
         datetime.datetime.now(),
         "--from",
-        help="from",
+        help="retrieve all records from this date. Default to today's date.",
     ),
-    format_: str = typer.Option("oai_dc", "--format", help="metadata format"),
+    format_: str = typer.Option(
+        "oai_dc",
+        "--format",
+        help="metadata format in wich to retrieve records. Default to 'oai_dc'.",
+    ),
     out_dir: Path = typer.Option(
         ...,
         "--outDir",
@@ -34,7 +38,7 @@ def main(
         dir_okay=True,
         writable=True,
         resolve_path=True,
-        help="Output directory",
+        help="output directory: where to save the downloaded records. Required.",
     ),
 ) -> None:
     """OAI PMH client cli."""
