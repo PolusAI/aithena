@@ -1,11 +1,14 @@
-#vscode config
-.vscode
+# secrets (may contain sensitive data)
+**/**-secret.yaml
 
-# environment file
+# environment file (may contain sensitive data)
 .env
 
-# venv environment
+# venv environment (contain all dependencies)
 **/.venv/
+
+# staging directory for docker build
+docker_build/
 
 #logs
 *.out
@@ -186,6 +189,3 @@ cython_debug/
 
 #husky
 node_modules
-
-# secrets
-**/**-secret.yaml
