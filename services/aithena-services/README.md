@@ -15,7 +15,7 @@ as a rest service.
 
 This service is a client to existing llm backends that must be deployed independently.
 You will need to tell aithena services which backends it can talk to by defining a set
-of enviroment variables.
+of environment variables.
 Available environment variables and how to configure aithena-services is described
 [here](docs/env.md)
 
@@ -32,7 +32,7 @@ We will create a docker network and deployed ollama and aithena services on this
 
 ```shell
 DOCKER_NETWORK=aithena-net
-docker create network ${DOCKER_NETWORK}
+docker network create ${DOCKER_NETWORK}
 docker run -p 11434:11434 --net aithena-net  --name ollama ollama/ollama
 ```
 
@@ -48,6 +48,7 @@ PORT=9000
 A simple way to deploy aithena services for testing is to use our existing docker image
 
 ```shell
+DOCKER_NETWORK=aithena-net
 OLLAMA_HOST=http://ollama:11434
 docker run -it -p ${PORT}:80 --env OLLAMA_HOST=${OLLAMA_HOST}  --net ${DOCKER_NETWORK} --name ais polusai/aithena-services:0.1.0-dev2
 ```
@@ -73,14 +74,12 @@ curl -X POST  http://0.0.0.0:${PORT}/ollama/pull/llama3.1:latest
 Test embed:
 
 ```shell
-curl -X POST  http://0.0.0.0:${PORT}/ollama/pull/nomic-embed-text
 curl -X POST http://localhost:${PORT}/embed/nomic-embed-text/generate -d '"This is a test embedding"'
 ```
 
 Test chat:
 
 ```shell
-curl -X POST  http://0.0.0.0:${PORT}/ollama/pull/llama3.1:latest
 curl -X POST http://localhost:${PORT}/chat/llama3.1/generate\?stream\=False -d '[{"role": "user", "content": "What is the capital of France?"}]'
 ```
 

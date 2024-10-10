@@ -13,7 +13,7 @@ Build the container:
 `./build-docker.sh`
 
 Start the container :
-`docker run -it --rm -p8000:8000 polusai/ask-aithena-agent:${VERSION}(-arm64)`
+`docker run -it --rm -p8000:8000 polusai/ask-aithena-agent:${VERSION}`
 
 Test:
 
@@ -24,3 +24,30 @@ Test:
 # Tests
 
 `pytest` or `poetry run pytest`
+
+## Example Deployment
+
+For our example deployment, we will use docker to set up our all infrastructure.
+
+Follow instructions to deploy [aithena services](../../services/aithena-services/README.md#example-deployment)
+
+We will also need to deploy qdrant.
+
+`docker run -p 6333:6333 --name qdrant --net aithena-net qdrant/qdrant:latest`
+
+Then you can deploy the agent:
+
+```shell
+VERSION=0.1.2-dev0
+AITHENA_SERVICE_URL=http://ais:9000
+DB_HOST=qdrant
+DB_PORT=6333
+DOC_COLLECTION=example_db
+docker run -it --rm -p8000:8000 --env AITHENA_SERVICE_URL=${AITHENA_SERVICE_URL} --env DB_HOST=${DB_HOST} --env DB_PORT=${DB_PORT} --env DOC_COLLECTION=${DOC_COLLECTION}  --net aithena-net --name ask-agent polusai/ask-aithena-agent:${VERSION}
+```
+
+Test
+
+
+
+
