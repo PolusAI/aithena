@@ -1,4 +1,4 @@
-# Ask Aithena (v0.1.2-dev0)
+# Ask Aithena (v0.1.2-dev1)
 
 The AskAithena agent is a high level services that implements the basic `ask` rag function.
 Provided with a question or a query, it will retrieve relevant documents from a database
@@ -38,7 +38,7 @@ We will also need to deploy qdrant.
 Then you can deploy the agent:
 
 ```shell
-VERSION=0.1.2-dev0
+VERSION=0.1.2-dev1
 AITHENA_SERVICE_URL=http://ais:9000
 DB_HOST=qdrant
 DB_PORT=6333

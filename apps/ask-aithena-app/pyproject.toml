@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ask-aithena-app"
-version = "0.1.0-dev2"
+version = "0.1.0-dev3"
 description = ""
 authors = ["Camilo Velez <camilo.velez@axleinfo.com>, Antoine  <antoine.gerardin@nih.gov>"]
 readme = "README.md"

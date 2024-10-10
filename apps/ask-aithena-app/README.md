@@ -1,4 +1,4 @@
-# Ask Aithena App (v0.1.0-dev2)
+# Ask Aithena App (v0.1.0-dev3)
 
 Ask aithena app is a solara dashboard communicating with the ask aithena agent.
 It allows the user to ask questions and leverage existing scientific literature 

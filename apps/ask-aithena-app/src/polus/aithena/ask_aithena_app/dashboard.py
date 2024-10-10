@@ -13,7 +13,7 @@ from solara.alias import rv
 
 logger = get_logger(__file__)
 
-__version__ = "0.1.0-dev2"
+__version__ = "0.1.0-dev3"
 
 API_URL = os.getenv("ASK_AITHENA_API_URL", "http://localhost:8080")
 logger.info(f"Started Dashboard with Ask Aithena URL: {API_URL}")

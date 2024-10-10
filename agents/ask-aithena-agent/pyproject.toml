@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ask-aithena-agent"
-version = "0.1.2-dev0"
+version = "0.1.2-dev1"
 description = ""
 authors = ["Antoine Gerardin <antoine.gerardin@nih.gov>, Camilo Velez <camilo.velezramirez@nih.gov>"]
 readme = "README.md"
