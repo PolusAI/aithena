@@ -26,7 +26,10 @@ if [ "$ARCH_SUFFIX" == "-x86_64" ]; then
     ARCH_SUFFIX=""
 fi
 
-tag="polusai/${tool_name}:${version}"
+# set the docker image name
+# Use the environment variable for the prefix if defined, otherwise default to 'polusai'
+org=${DOCKER_ORG:-polusai}
+tag="${org}/${tool_name}:${version}"
 tag=$tag${ARCH_SUFFIX}
 
 echo "Building docker image with tag: ${tag}"
