@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aithena-services"
-version = "0.1.0-dev2"
+version = "0.1.0-dev3"
 description = ""
 authors = ["Camilo Velez <camilo.velez@axleinfo.com>, Antoine Gerardin <antoine.gerardin@nextonicsolutions.com>"]
 readme = "README.md"

@@ -2,7 +2,7 @@
 name = "ask-aithena-app"
 version = "0.1.0-dev3"
 description = ""
-authors = ["Camilo Velez <camilo.velez@axleinfo.com>, Antoine  <antoine.gerardin@nih.gov>"]
+authors = ["Camilo Velez <camilo.velez@nih.gov>, Antoine  <antoine.gerardin@nih.gov>"]
 readme = "README.md"
 packages = [{include = "polus", from = "src"}]
 
