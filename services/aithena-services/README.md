@@ -1,4 +1,4 @@
-# aithena-services 0.1.0-dev2
+# aithena-services 0.1.1-dev0
 
 Aithena-services provides a unified way to interact with many LLMs.
 
@@ -45,7 +45,7 @@ A simple way to deploy aithena services for testing is to use our existing docke
 
 ```shell
 OLLAMA_HOST=http://ollama:11434
-docker run -it -p ${PORT}:80 --env OLLAMA_HOST=${OLLAMA_HOST}  --net ${DOCKER_NETWORK} --name ais polusai/aithena-services:0.1.0-dev2
+docker run -it -p ${PORT}:80 --env OLLAMA_HOST=${OLLAMA_HOST}  --net ${DOCKER_NETWORK} --name ais polusai/aithena-services:0.1.1-dev0
 ```
 
 Note that we configured aithena services to reach ollama at `http://ollama:11434` using the service exposed by the docker network.
