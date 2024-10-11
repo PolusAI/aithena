@@ -1,23 +1,20 @@
 # aithena-services 0.1.0-dev2
 
-Aithena-services provide a unified way to interact with many llms.
+Aithena-services provides a unified way to interact with many LLMs.
 
-It uses llama-index to interact with several existing llm backends:
+It uses llama-index to interact with several existing LLM backends:
 - ollama
 - openai
 - azure_openai
 
-The package can be used directly as a python client or can be deployed
-as a rest service.
+The package can be used directly as a python client or can be deployed as a REST service.
 
 
 ## Configuration
 
-This service is a client to existing llm backends that must be deployed independently.
-You will need to tell aithena services which backends it can talk to by defining a set
-of enviroment variables.
-Available environment variables and how to configure aithena-services is described
-[here](docs/env.md)
+This service is a client to existing LLM backends that must be deployed independently.
+You will need to tell aithena services which backends it can talk to by defining a set of enviroment variables.
+Available environment variables and how to configure aithena-services is described [here](docs/env.md)
 
 
 ## Example Deployment
@@ -36,8 +33,7 @@ docker create network ${DOCKER_NETWORK}
 docker run -p 11434:11434 --net aithena-net  --name ollama ollama/ollama
 ```
 
-Here we start the ollama container (the image will pulled if not present),
-give it the name ollama, and expose it to the network on port 11434.
+Here we start the ollama container (the image will pulled if not present), give it the name ollama, and expose it to the network on port 11434.
 
 We will deploy aithena services on port `9000`
 
@@ -52,8 +48,7 @@ OLLAMA_HOST=http://ollama:11434
 docker run -it -p ${PORT}:80 --env OLLAMA_HOST=${OLLAMA_HOST}  --net ${DOCKER_NETWORK} --name ais polusai/aithena-services:0.1.0-dev2
 ```
 
-Note that we configured aithena services to reach ollama at `http://ollama:11434`
-using the service exposed by the docker network.
+Note that we configured aithena services to reach ollama at `http://ollama:11434` using the service exposed by the docker network.
 Update the image version to match the current version.
 
 ### Configure ollama
@@ -106,6 +101,4 @@ Currently the image needs to be build from the top-level directory:
 `cd services/aithena-services/src/aithena_services`
 `./docker/build-docker.sh`
 
-Make sure no .env file is present is `services/aithena-services/src/aithena_services`
-or this file will be committed with the image leaking your secrets and
-it will also prevent any later configuration attempt.
+Make sure no .env file is present is `services/aithena-services/src/aithena_services` or this file will be committed with the image leaking your secrets and it will also prevent any later configuration attempt.

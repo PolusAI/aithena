@@ -5,7 +5,7 @@ import json
 import random
 
 # pylint: disable=C0415, W0621, C0413, C0103
-from aithena_services.envvars import (
+from aithena_services.config import (
     AZURE_OPENAI_ENDPOINT,
     AZURE_OPENAI_ENV_DICT,
     OLLAMA_HOST,

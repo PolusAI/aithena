@@ -12,7 +12,7 @@ from llama_index.core.llms import ChatMessage
 
 # this is after dotenv in case .env for tests
 # defines different values for these variables
-from aithena_services.envvars import OLLAMA_HOST
+from aithena_services.config import OLLAMA_HOST
 from aithena_services.llms.types import ChatResponse, Message
 
 

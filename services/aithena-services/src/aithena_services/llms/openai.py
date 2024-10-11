@@ -15,7 +15,10 @@ from aithena_services.llms.types.response import (
     ChatResponseGen,
 )
 from aithena_services.llms.utils import check_and_cast_messages
+from polus.aithena.common.logger import get_logger
+from aithena_services.config import TIMEOUT
 
+logger = get_logger("aithena_services.llms.openai")
 
 def custom_sort_for_openai_models(name: str) -> tuple[int, str]:
     """Custom sort function for OpenAI models."""
@@ -41,18 +44,20 @@ OPENAI_MODELS = list_openai_models()
 class OpenAI(LlamaIndexOpenAI, AithenaLLM):
     """OpenAI models."""
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, timeout=TIMEOUT, **kwargs: Any):
         if "model" not in kwargs:
             raise ValueError(f"Model not specified. Available models: {OPENAI_MODELS}")
         if kwargs["model"] not in OPENAI_MODELS:
             raise ValueError(
                 f"Model {kwargs['model']} not available. Available models: {OPENAI_MODELS}"
             )
-        super().__init__(**kwargs)
+        logger.debug(f"Initializing OpenAI chat with kwargs: {kwargs}")
+        super().__init__(timeout=timeout, **kwargs)
 
     @staticmethod
     def list_models() -> list[str]:
         """List available OpenAI chat models."""
+        logger.debug(f"Listing OpenAI chat models")
         return list_openai_models()
 
     @chataithena

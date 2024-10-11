@@ -7,9 +7,10 @@ from typing import Any, Sequence
 from llama_index.llms.azure_openai import AzureOpenAI as LlamaIndexAzureOpenAI
 
 from aithena_services.common.azure import resolve_azure_deployment
-from aithena_services.envvars import (
+from aithena_services.config import (
     AZURE_OPENAI_CHAT_MODELS_DICT,
     AZURE_OPENAI_ENV_DICT,
+    TIMEOUT,
 )
 from aithena_services.llms.types import Message
 from aithena_services.llms.types.base import AithenaLLM, chataithena, streamchataithena
@@ -19,7 +20,9 @@ from aithena_services.llms.types.response import (
     ChatResponseGen,
 )
 from aithena_services.llms.utils import check_and_cast_messages
+from polus.aithena.common.logger import get_logger
 
+logger = get_logger("aithena_services.llms.azure_openai")
 
 class AzureOpenAI(LlamaIndexAzureOpenAI, AithenaLLM):
     """Azure OpenAI LLMs.
@@ -51,11 +54,12 @@ class AzureOpenAI(LlamaIndexAzureOpenAI, AithenaLLM):
         that are listed as environment variables in the correct format.
         The format is `AZURE_OPENAI_DEPLOYMENT_CHAT_{name}={value}`.
         """
+        logger.debug(f"Listing Azure OpenAI chat deployments")
         return list(AZURE_OPENAI_CHAT_MODELS_DICT.keys())
 
     list_models = list_deployments  # Alias
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, timeout=TIMEOUT, **kwargs: Any):
         for arg in ["api_key", "azure_endpoint", "api_version"]:
             if arg not in kwargs or kwargs[arg] is None:
                 kwargs[arg] = AZURE_OPENAI_ENV_DICT[arg]
@@ -66,6 +70,7 @@ class AzureOpenAI(LlamaIndexAzureOpenAI, AithenaLLM):
         kwargs["engine"] = resolve_azure_deployment(
             kwargs["engine"], AZURE_OPENAI_CHAT_MODELS_DICT
         )
+        logger.debug(f"Initializing Azure OpenAI with kwargs: {kwargs}")
         super().__init__(**kwargs)
 
     @chataithena

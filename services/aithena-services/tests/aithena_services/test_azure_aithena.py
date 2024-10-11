@@ -14,7 +14,7 @@ from llama_index.core.base.llms.types import CompletionResponse
 
 # this is after dotenv in case .env for tests
 # defines different values for these variables
-from aithena_services.envvars import AZURE_OPENAI_AVAILABLE, AZURE_OPENAI_ENV_DICT
+from aithena_services.config import AZURE_OPENAI_AVAILABLE, AZURE_OPENAI_ENV_DICT
 from aithena_services.llms.types import ChatResponse, Message
 
 DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT")
