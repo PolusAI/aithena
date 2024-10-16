@@ -17,17 +17,17 @@
 
 
 {{- define "pv.name" -}}
-{{- printf "%s-%s" "pv" .Release.Name -}}
+{{- printf "%s-%s-%s" "pv" .Release.Name .Chart.Name -}}
 {{- end -}}
 
 {{- define "pvc.name" -}}
-{{- printf "%s-%s" "pvc" .Release.Name -}}
+{{- printf "%s-%s-%s" "pvc" .Release.Name  .Chart.Name -}}
 {{- end -}}
 
 {{- define "storage.name" -}}
-{{- printf "%s-%s" "storage" .Release.Name -}}
+{{- printf "%s-%s-%s" "storage" .Release.Name  .Chart.Name -}}
 {{- end -}}
 
 {{- define "service.name" -}}
-{{- printf "%s-%s" "service" .Release.Name -}}
+{{- printf "%s-%s-%s" "service" .Release.Name  .Chart.Name -}}
 {{- end -}}
