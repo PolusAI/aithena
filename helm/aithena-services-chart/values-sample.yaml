@@ -1,0 +1,45 @@
+# Default values for qdrantChart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+
+image:
+  repository: agerardin/aithena-services
+  pullPolicy: IfNotPresent
+  tag: "0.1.0-dev3"
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 80
+  nodePort: 32080 
+
+container:
+  mountPath: "/mnt/config"
+  # resources:
+  #   requests:
+  #     memory: "500Mi"
+  #     cpu: "1"
+  #   limits:
+  #     memory: "2Gi"
+  #     cpu: "1"
+
+secrets:
+  - name: aithena-services-secret
+
+env:
+  - name: OLLAMA_HOST
+    value: "http://service-ollama.test-aithena.svc.cluster.local:11434"
+
+persistentVolume:
+  storage: 5Mi
+  hostPath: /path/to/aithena-services-data
+
+persistentVolumeClaim:
+  storage: 5Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

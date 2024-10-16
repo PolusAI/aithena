@@ -1,0 +1,86 @@
+{{- define "aithena-lib-chart.depl.tpl" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chart.fullname" . }}
+  labels:
+    app: {{ include "chart.name" . }}
+    chart: {{ include "chart.chart" . }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "chart.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "chart.name" . }}
+    spec:
+
+      {{if .Values.persistentVolumeClaim}}
+      volumes:
+        - name: {{ include "storage.name" . | quote }}
+          persistentVolumeClaim:
+            claimName: {{ include "pvc.name" . | quote }}
+      {{- end }}
+
+      containers:
+      - name: {{ include "chart.name" . }}
+      
+        image:  "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ default .Values.image.pullPolicy "IfNotPresent" | quote }}
+        {{- if .Values.service.port }}
+        ports:
+          - containerPort: {{ .Values.service.port }}
+        {{- end }}
+
+        # Mount all declared secrets
+        {{- if .Values.secrets }}
+        envFrom:
+          {{- range .Values.secrets }}
+          - secretRef:
+              name: {{ .name }}
+          {{- end }}
+        {{- end }}
+
+        # Mount all declared configMaps
+        {{- if .Values.configMaps }}
+        envFrom:
+          {{- range .Values.configMaps }}
+          - configMapRef:
+              name: {{ .name }}
+          {{- end }}
+        {{- end }}
+
+        # Declare environment variables
+        {{- if .Values.env }}
+        env:
+          {{- range .Values.env }}
+          - name: {{ .name }}
+            value: {{ .value | quote }}
+          {{- end }}
+        {{- end }}
+
+      {{- if .Values.container}}
+        {{- if .Values.container.mountPath }}
+        volumeMounts:
+        - mountPath: {{ .Values.container.mountPath }}
+          name: {{ include "storage.name" .}}
+        {{- end }}        
+      {{- end }}
+
+        {{- if .Values.resources }}
+        resources:
+          requests:
+            memory: "{{ .Values.resources.requests.memory }}"
+            cpu: "{{ .Values.resources.requests.cpu }}"
+          limits:
+            memory: "{{ .Values.resources.limits.memory }}"
+            cpu: "{{ .Values.resources.limits.cpu }}"
+        {{- end }}
+{{- end -}}
+
+{{- define "aithena-lib-chart.depl" -}}
+{{- include "aithena-lib-chart.util.merge" (append . "aithena-lib-chart.depl.tpl") -}}
+{{- end -}}

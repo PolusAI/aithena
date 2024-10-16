@@ -1,0 +1,3 @@
+{{- include "aithena-lib-chart.serv" (list . "chart.serv") -}}
+{{- define "chart.serv" -}} {}
+{{- end -}}

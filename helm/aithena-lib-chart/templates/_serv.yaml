@@ -1,0 +1,21 @@
+{{- define "aithena-lib-chart.serv.tpl" -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.name | default (include "service.name" .) | quote }}
+  labels:
+    app: {{ include "chart.name" . | quote }}
+spec:
+  type: NodePort
+  selector:
+    app: {{ include "chart.name" . | quote }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      nodePort: {{ .Values.service.nodePort}}  # Specify a port in the range 30000-32767
+{{- end -}}
+
+{{- define "aithena-lib-chart.serv" -}}
+  {{- include "aithena-lib-chart.util.merge" (append . "aithena-lib-chart.serv.tpl") -}}
+{{- end -}}
