@@ -1,10 +1,8 @@
 # mypy: disable-error-code="import-untyped"
-"""Ollama implementation based on LlamaIndex."""
+"""AzureOpenAI implementation based on LlamaIndex."""
 
 # pylint: disable=too-many-ancestors
 from typing import Any, Sequence
-
-from llama_index.llms.azure_openai import AzureOpenAI as LlamaIndexAzureOpenAI
 
 from aithena_services.common.azure import resolve_azure_deployment
 from aithena_services.config import (
@@ -20,9 +18,11 @@ from aithena_services.llms.types.response import (
     ChatResponseGen,
 )
 from aithena_services.llms.utils import check_and_cast_messages
+from llama_index.llms.azure_openai import AzureOpenAI as LlamaIndexAzureOpenAI
 from polus.aithena.common.logger import get_logger
 
 logger = get_logger("aithena_services.llms.azure_openai")
+
 
 class AzureOpenAI(LlamaIndexAzureOpenAI, AithenaLLM):
     """Azure OpenAI LLMs.
@@ -65,7 +65,8 @@ class AzureOpenAI(LlamaIndexAzureOpenAI, AithenaLLM):
                 kwargs[arg] = AZURE_OPENAI_ENV_DICT[arg]
         if "deployment" in kwargs:
             if "engine" in kwargs:
-                raise ValueError("Cannot specify both `deployment` and `engine`.")
+                raise ValueError(
+                    "Cannot specify both `deployment` and `engine`.")
             kwargs["engine"] = kwargs.pop("deployment")
         kwargs["engine"] = resolve_azure_deployment(
             kwargs["engine"], AZURE_OPENAI_CHAT_MODELS_DICT
