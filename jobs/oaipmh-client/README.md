@@ -18,9 +18,11 @@ See `src/polus/aithena/oaipmh_client/__main__.py`
 Download yesterday's records on arxiv in the arXiv format
 
 ```shell
-DATE=$(date -v -1d '+%Y-%m-%d') \
+DATE=$(date -d 'yesterday' '+%Y-%m-%d') 
+# on osx DATE=$(date -v -1d '+%Y-%m-%d') 
 OUT_DIR=/path/to/output/directory \
-docker run -v $OUT_DIR:/outDir polusai/aithena-oai-pmh-client:0.2.0 --from $DATE --outDir=/outDir --format arXiv
+DOCKER_ORG=polusai
+docker run -v $OUT_DIR:/outDir $DOCKER_ORG/oaipmh-client:0.2.0-dev0 --from $DATE --outDir=/outDir --format arXiv
 ```
 
 ## Build docker image
@@ -28,3 +30,5 @@ docker run -v $OUT_DIR:/outDir polusai/aithena-oai-pmh-client:0.2.0 --from $DATE
 ```shell
 ./build-docker.sh
 ```
+
+

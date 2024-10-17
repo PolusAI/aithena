@@ -1,0 +1,23 @@
+{{- define "job-lib-chart.pv.tpl" -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.persistentVolume.name | default (include "pv.name" .) | quote }}
+  labels:
+    app: {{ .Release.Name | quote}}
+    release: {{ .Release.Name | quote}}
+    chart: {{ include "chart.name" . | quote}}
+spec:
+  capacity:
+    storage: {{required "Provide requested storage size." .Values.persistentVolume.storage | quote }}
+  accessModes:
+    - {{ .Values.persistentVolume.accessMode | default "ReadWriteOnce" | quote }}
+  persistentVolumeReclaimPolicy: {{ .Values.persistentVolume.reclaimPolicy | default "Retain" | quote }}
+  storageClassName: {{ .Values.persistentVolume.storageClass | default "manual" | quote }}
+  hostPath:
+    path: {{required "Provide the path to storage on local filesystem."  .Values.persistentVolume.hostPath | quote}}
+{{- end -}}
+
+{{- define "job-lib-chart.pv" -}}
+{{- include "job-lib-chart.util.merge" (append . "job-lib-chart.pv.tpl") -}}
+{{- end -}}

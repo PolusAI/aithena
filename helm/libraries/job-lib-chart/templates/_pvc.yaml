@@ -1,0 +1,21 @@
+{{- define "job-lib-chart.pvc.tpl" -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.persistentVolumeClaim.name | default (include "pvc.name" .) | quote }}
+  labels:
+    app: {{ .Release.Name | quote}}
+    release: {{ .Release.Name | quote}}
+    chart: {{ include "chart.name" . | quote}}
+spec:
+  accessModes:
+    - {{ .Values.persistentVolumeClaim.accessMode | default "ReadWriteOnce" | quote }}
+  resources:
+    requests:
+      storage: {{required "Provide requested storage size." .Values.persistentVolumeClaim.storage | quote}}
+  storageClassName: {{ .Values.persistentVolumeClaim.storageClass | default "manual" | quote }}
+  {{- end -}}
+
+{{- define "job-lib-chart.pvc" -}}
+  {{- include "job-lib-chart.util.merge" (append . "job-lib-chart.pvc.tpl") -}}
+{{- end -}}

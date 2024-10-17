@@ -26,7 +26,8 @@ if [ "$ARCH_SUFFIX" == "-x86_64" ]; then
     ARCH_SUFFIX=""
 fi
 
-tag="polusai/${tool_name}:${version}"
+org=${DOCKER_ORG:-polusai}
+tag="${org}/${tool_name}:${version}"
 tag=$tag${ARCH_SUFFIX}
 
 echo "Building docker image with tag: ${tag}"

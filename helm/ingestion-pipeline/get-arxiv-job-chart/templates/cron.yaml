@@ -1,0 +1,3 @@
+{{- include "job-lib-chart.cron" (list . "chart.cron") -}}
+{{- define "chart.cron" -}}
+{{- end -}}
