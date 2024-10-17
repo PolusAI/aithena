@@ -1,0 +1,13 @@
+NAMESPACE=test-aithena
+RELEASE_NAME=ask-aithena-app
+
+ASK_AITHENA_SERVICE_NAME=service-ask-ask-aithena-agent-chart
+ASK_AITHENA_PORT=8000
+ASK_AITHENA_API_URL=http://${ASK_AITHENA_SERVICE_NAME}.${NAMESPACE}.svc.cluster.local:${ASK_AITHENA_PORT}
+EMBED_MODEL="nomic-embed-text"
+CHAT_MODEL="gpt-4o"
+
+NODE_PORT=33999
+
+USER=gerardinad
+REMOTE_HOST=polus2.ncats.nih.gov

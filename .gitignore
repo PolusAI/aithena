@@ -1,8 +1,16 @@
+# helm files
+values.yaml
+*.tgz
+*.lock
+
 # secrets (may contain sensitive data)
 **/**-secret.yaml
 
 # environment file (may contain sensitive data)
 .env
+
+# environment variable used in documentation
+.vars
 
 # venv environment (contain all dependencies)
 **/.venv/
@@ -12,6 +20,7 @@ docker_build/
 
 # canonical data directory
 .data
+.test-data
 
 #logs
 *.out

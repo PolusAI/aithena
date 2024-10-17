@@ -1,0 +1,3 @@
+NAMESPACE=test-aithena
+HOST=localhost
+NODE_PORT=32434

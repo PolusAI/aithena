@@ -13,3 +13,15 @@ to provide accurate and sourced information.
 
 Ask-aithena agent needs to be deployed as it is our backend. 
 See [instructions](../../agents/ask-aithena-agent/README.md)
+
+## Test 
+
+Create a tunnel to your host
+
+```shell
+ssh -L ${NODE_PORT}:127.0.0.1:${NODE_PORT} ${USER}@{REMOTE_HOST}
+```
+
+Browse to `http://localhost:${NODE_PORT}`
+
+Ask Aithena!
