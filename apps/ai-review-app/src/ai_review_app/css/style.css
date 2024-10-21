@@ -1,0 +1,27 @@
+.v-application--wrap>div:nth-child(2)>div:nth-child(2) {
+    display: none !important;
+}
+
+.v-main {
+    padding-left: 0 !important;
+    padding-right: 256px !important;
+}
+
+
+.milkdown-menu.milkdown-khm40g {
+    display: none !important;
+}
+
+.milkdown {
+    border: 1px dashed #acacac;
+}
+
+.code-fence_selector {
+    display: none !important;
+}
+
+.custom-drawer {
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    padding: 20px;
+}

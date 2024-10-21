@@ -19,7 +19,9 @@ check it runs :
 
 curl ${HOST}:${NODE_PORT}
 
+
 Check available models: 
+
 curl ${HOST}:${NODE_PORT}/api/tags
 
 
