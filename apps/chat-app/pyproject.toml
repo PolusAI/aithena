@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "aithena-agent-chat"
+version = "0.1.0-dev4"
+description = "A generic chat agent to interact with chat models in the Aithena framework."
+authors = ["Camilo Velez <camilo.velezramirez@nih.gov>, Antoine  <antoine.gerardin@nih.gov>"]
+readme = "README.md"
+packages = [{include = "polus", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+solara = "^1.39.0"
+
+[tool.poetry.group.dev.dependencies]
+bumpversion = "^0.6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

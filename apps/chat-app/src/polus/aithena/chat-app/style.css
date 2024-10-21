@@ -1,0 +1,11 @@
+.v-application--wrap>div:nth-child(2)>div:nth-child(2) {
+    display: none !important;
+}
+
+.milkdown-menu.milkdown-khm40g {
+    display: none !important;
+}
+
+.code-fence_selector {
+    display: none !important;
+}
