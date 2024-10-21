@@ -11,7 +11,7 @@ from solara.alias import rv
 
 
 @solara.component
-def ModelRow(
+def SelectOptions(
     llm_options,
     llm_name,
     set_llm_name,
@@ -57,7 +57,7 @@ def ModelRow(
         )
 
 
-def update_message(index, edit_index, current_edit_val, messages):
+def save_edited_msg(index, edit_index, current_edit_val, messages):
     updated_messages = copy(messages.value)
     updated_messages[index] = {
         "role": "assistant",
@@ -81,7 +81,7 @@ def EditableMessage(messages, message, index, edit_index, current_edit_value):
         solara.Button(
             "SEND",
             on_click=partial(
-                update_message, index, edit_index, current_edit_value, messages
+                save_edited_msg, index, edit_index, current_edit_value, messages
             ),
             style={
                 "position": "center",

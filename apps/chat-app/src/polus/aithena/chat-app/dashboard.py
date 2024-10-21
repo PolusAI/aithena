@@ -12,7 +12,7 @@ from typing import Callable
 import requests  # type: ignore
 import solara
 import solara.lab
-from component_utils import EditableMessage, ModelLabel, ModelRow  # type: ignore
+from component_utils import EditableMessage, ModelLabel, SelectOptions  # type: ignore
 from solara.alias import rv
 
 logger = logging.getLogger("aithena-agent-chat")
@@ -27,17 +27,6 @@ logger.info(f"Started Aithena Chat Agent with API URL: {API_URL}")
 
 FILE_PATH = Path(__file__).parent.absolute()
 
-# PROMPT_DEFAULT = """
-# You are a helpful assistant named Aithena.
-# Respond to users with witty, entertaining, and thoughtful answers.
-# User wants short answers, maximum five sentences.
-# If user asks info about yourself or your architecture,
-# respond with info about your LLM model and its capabilities.
-# Do not finish every sentence with a question.
-# If you ask a question, always include a question mark.
-# Do not introduce yourself to user if user does not ask for it.
-# Never explain to user how your answers are.
-# """
 PROMPT_DEFAULT = """
 You are an expert scientific assistant named Aithena.
 Respond to users with knowledgeable, informative, and thoughtful answers.
@@ -50,7 +39,7 @@ PROMPT = os.getenv("AITHENA_CHAT_PROMPT", PROMPT_DEFAULT)
 MESSAGES = solara.reactive([{"role": "system", "content": PROMPT}])
 
 
-def add_chunk_to_ai_message(chunk: str):
+def add_chunk_to_response(chunk: str):
     """Add chunk to assistant message."""
     MESSAGES.value = [
         *MESSAGES.value[:-1],
@@ -61,7 +50,7 @@ def add_chunk_to_ai_message(chunk: str):
     ]
 
 
-def change_llm_name(set_llm_name, reset_on_change, set_model_labels, *args):
+def select_llm(set_llm_name, reset_on_change, set_model_labels, *args):
     """Change the selected LLM."""
     set_llm_name(args[-1])
     if reset_on_change:
@@ -150,11 +139,8 @@ else:
 
 CONTEXT_WINDOW_SIZE = os.getenv("AITHENA_CHAT_CONTEXT_WINDOW_SIZE", "2048")
 
-
 @ solara.component
 def Page():
-    edit_index = solara.reactive(None)
-    current_edit_value = solara.reactive("")
 
     solara.Style(FILE_PATH.joinpath("style.css"))
     solara.Title("Aithena")
@@ -173,6 +159,11 @@ def Page():
     is_menu_open, set_is_menu_open = solara.use_state(False)
     model_labels, set_model_labels = solara.use_state({})
     user_query, set_user_query = solara.use_state("")
+
+    edit_index = solara.reactive(None)
+
+    current_edit_value = solara.reactive("")
+
 
     def call_llm():
         if user_message_count == 0:
@@ -193,7 +184,7 @@ def Page():
             logger.debug(f"Received line: {line}")
             if not STOP_STREAMING.value:
                 if line:
-                    add_chunk_to_ai_message(json.loads(line)["delta"])
+                    add_chunk_to_response(json.loads(line)["delta"])
             else:
                 STOP_STREAMING.value = False
                 break
@@ -211,12 +202,12 @@ def Page():
             "overflow-y": "auto",
         },
     ):
-        ModelRow(
+        SelectOptions(
             LLMS_AVAILABLE,
             llm_name,
             set_llm_name,
             set_model_labels,
-            change_llm_name,
+            select_llm,
             reset_on_change,
             set_reset_on_change,
             MESSAGES.set,

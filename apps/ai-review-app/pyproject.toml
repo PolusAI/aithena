@@ -1,0 +1,33 @@
+[tool.poetry]
+authors = ["Antoine Gerardin <antoine.gerardin@nextonicsolutions.com>, Camilo Velez <camilo.velez@axleinfo.com>"]
+description = "Solara Dashboard for AI Review"
+name = "ai-review-app"
+packages = [{include = "ai_review_app", from = "src"}]
+version = "0.1.0"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+chatbot-dash = {git = "https://github.com/agerardin/aithena-services.git", branch = "feat/integration", subdirectory = "chatbot-dash"}
+polus-aithena-common = {path= "../../common", develop=true}
+arxiv-abstract-ingestion-tool= {path="../../jobs/embed-arxiv", develop=true}
+solara = "^1.37.1"
+qdrant-client = "^1.11.0"
+typing-extensions = "^4.12.2"
+docstring-inheritance = "^2.2.0"
+transformers = "4.42.4"
+plotly-express = "^0.4.1"
+umap-learn = "^0.5.6"
+hdbscan = "^0.8.39"
+plotly = "^5.24.1"
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core"]
+
+[tool.pytest.ini_options]
+# Enable logging to the console
+log_cli = true
+
+
+[tool.mypy]
+check_untyped_defs = true
