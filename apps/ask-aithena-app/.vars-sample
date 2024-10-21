@@ -1,4 +1,3 @@
-NAMESPACE=test-aithena
 HOST=localhost
 NODE_PORT=33999
 

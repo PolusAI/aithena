@@ -1,8 +1,6 @@
 # AIthena Services
 ## Model Configuration
 
-It is through the `config.json` file that users will made the REST API of AIthena Services aware of which models are available.
-It is through setting environment variables that users will make Aithena-Services aware of which models are available. Models include chat and embedding models.
 # .env
 1. Rename `.env-sample` to `.env`
 2. Replace the values of the environment variables with the correct values

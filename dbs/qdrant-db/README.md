@@ -15,6 +15,7 @@ curl http://${HOST}:${NODE_PORT}
 
 
 ### copy data to qdrant collections.
+
 (If qdrant has been run as priviledged user, you will
 need to sudo)
 

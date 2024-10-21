@@ -10,3 +10,4 @@ Then run your chosen deployment script.
 # Building Singularity Images
 
 run `.build-singularity.sh`
+
