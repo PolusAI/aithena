@@ -1,4 +1,4 @@
-# Aithena Chat Agent 0.1.0-dev4
+# Aithena Chat Agent (v0.1.0-dev4)
 
 A generic chat agent to interact with chat models in the Aithena framework.
 
@@ -6,8 +6,7 @@ A generic chat agent to interact with chat models in the Aithena framework.
 
 Rename `variables-sample.env` to `.env` and configure according to your deployment.
 
-
-## Environment Variables
+### Environment Variables
 
 * `AITHENA_SERVICES_URL` *Required*: URL of Aithena-Services API, e.g 'http://localhost:8000'
 * `AITHENA_CHAT_PROMPT` *Optional*: a system prompt for all conversations in the dashboard. If this variable is not specified, the following prompt will be used:
@@ -27,3 +26,9 @@ Never explain to user how your answers are.
 ```
 
 * `AITHENA_CHAT_CONTEXT_WINDOW_SIZE` *Optional*: context window in tokens. Default is 2048. This is used as the initial/default value of the input box.
+
+## Test 
+
+```shell
+docker run --env PORT=8765 --env-file .env --net ${DOCKER_NETWORK} --rm polusai/chat-app:0.1.0-dev4 --name chat-app ${AITHENA_SERVICES_IMAGE}
+```
