@@ -1,11 +1,14 @@
-"""Environment Variable Configuration for Aithena Services."""
-
-import logging
 import os
 
 from dotenv import find_dotenv, load_dotenv
+from polus.aithena.common.logger import get_logger
+from polus.aithena.common.utils import time_logger
 
 load_dotenv(find_dotenv(), override=True)
+
+TIMEOUT = int(os.environ.get("TIMEOUT") or "30")
+RETRY_AFTER = int(os.environ.get("RETRY_AFTER") or "5")
+RETRY_ATTEMPTS = int(os.environ.get("RETRY_ATTEMPTS") or "3")
 
 env = os.environ
 
@@ -34,18 +37,22 @@ for key, value in env.items():
         AZURE_OPENAI_EMBED_MODELS_DICT[k] = value
 
 
+logger = get_logger(__file__)
+
+logger.info(f"""
+Aithena-Services started with TIMEOUT: {TIMEOUT}, RETRY_AFTER: {RETRY_AFTER}, RETRY_ATTEMPTS: {RETRY_ATTEMPTS},
+OPENAI_KEY: {OPENAI_KEY}, OLLAMA_HOST: {OLLAMA_HOST}, AZURE_OPENAI_ENV: {AZURE_OPENAI_ENV_DICT},
+AZURE_OPENAI_CHAT_MODELS: {list(AZURE_OPENAI_CHAT_MODELS_DICT.keys())}, AZURE_OPENAI_EMBED_MODELS: {list(AZURE_OPENAI_EMBED_MODELS_DICT.keys())}
+""")
+
+
 __all__ = [
+    "TIMEOUT",
+    "RETRY_AFTER",
+    "RETRY_ATTEMPTS",
     "OPENAI_KEY",
     "OLLAMA_HOST",
     "AZURE_OPENAI_ENV_DICT",
     "AZURE_OPENAI_CHAT_MODELS_DICT",
     "AZURE_OPENAI_EMBED_MODELS_DICT",
 ]
-
-logger = logging.getLogger(__name__)
-logger.info("Environment variables loaded.")
-logger.info(f"OPENAI_KEY: {OPENAI_KEY}")
-logger.info(f"OLLAMA_HOST: {OLLAMA_HOST}")
-logger.info(f"AZURE_OPENAI_ENV_DICT: {AZURE_OPENAI_ENV_DICT}")
-logger.info(f"AZURE_OPENAI_CHAT_MODELS_DICT: {AZURE_OPENAI_CHAT_MODELS_DICT}")
-logger.info(f"AZURE_OPENAI_EMBED_MODELS_DICT: {AZURE_OPENAI_EMBED_MODELS_DICT}")
