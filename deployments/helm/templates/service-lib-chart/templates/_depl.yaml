@@ -33,6 +33,9 @@ spec:
         {{- if .Values.service.port }}
         ports:
           - containerPort: {{ .Values.service.port }}
+            {{- if .Values.service.hostPort }}
+            hostPort: {{ .Values.service.hostPort }}
+            {{- end }}
         {{- end }}
 
         # Mount all declared secrets

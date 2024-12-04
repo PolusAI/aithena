@@ -7,12 +7,10 @@ from typing import Any
 import requests  # type: ignore
 from llama_index.embeddings.ollama import OllamaEmbedding as LlamaIndexOllama
 
-from aithena_services.envvars import OLLAMA_HOST
+from aithena_services.config import OLLAMA_HOST
+from polus.aithena.common.logger import get_logger
 
-from logging import getLogger
-
-logger = getLogger(__name__)
-
+logger = get_logger("aithena_services.embeddings.ollama")
 
 class OllamaEmbedding(LlamaIndexOllama):
     """Ollama embeddings."""
@@ -24,12 +22,13 @@ class OllamaEmbedding(LlamaIndexOllama):
             kwargs["model_name"] = kwargs["model"]
         if "base_url" not in kwargs or kwargs["base_url"] is None:
             kwargs["base_url"] = OLLAMA_HOST
+        logger.debug(f"Initalizing Ollama embedding with kwargs: {kwargs}")
         super().__init__(**kwargs)
 
     @staticmethod
     def list_models(url: str = OLLAMA_HOST) -> list[str]:  # type: ignore
         """List available Ollama models."""
-        logger.debug(f"Listing Ollama models at {url}")
+        logger.debug(f"Listing Ollama embedding models at {url}")
         r = [
             x["name"]
             for x in requests.get(url + "/api/tags", timeout=40).json()["models"]

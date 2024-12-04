@@ -1,14 +1,13 @@
-# aithena-services 0.1.0-dev3
+# aithena-services 0.1.1-dev0
 
-Aithena-services provide a unified way to interact with many llms.
+Aithena-services provides a unified way to interact with many LLMs.
 
-It uses llama-index to interact with several existing llm backends:
+It uses llama-index to interact with several existing LLM backends:
 - ollama
 - openai
 - azure_openai
 
-The package can be used directly as a python client or can be deployed
-as a rest service.
+The package can be used directly as a python client or can be deployed as a REST service.
 
 ## Configuration
 
@@ -108,6 +107,4 @@ Currently the image needs to be build from the top-level directory:
 `cd services/aithena-services`
 `./docker/build-docker.sh`
 
-Make sure no .env file is present is `services/aithena-services/src/aithena_services`
-or this file will be committed with the image leaking your secrets and
-it will also prevent any later configuration attempt.
+Make sure no .env file is present is `services/aithena-services/src/aithena_services` or this file will be committed with the image leaking your secrets and it will also prevent any later configuration attempt.
