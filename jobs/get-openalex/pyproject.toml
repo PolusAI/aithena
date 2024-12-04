@@ -1,0 +1,32 @@
+[tool.poetry]
+authors = ["Camilo Velez <camilo.velezramirez@nih.gov>"]
+description = "get-openalex"
+name = "get-openalex"
+packages = [{include = "polus", from = "src"}]
+readme = "README.md"
+version = "0.1.0"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+
+boto3 = "^1.35.63"
+polus-aithena-common = {path = "../../common", develop = true}
+tqdm = "^4.67.0"
+[tool.poetry.group.dev.dependencies]
+bump2version = "^1.0.1"
+pre-commit = "^3.8.0"
+pytest = "^8.3.2"
+pytest-sugar = "^1.0.0"
+pytest-xdist = "^3.6.1"
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core"]
+
+[tool.pytest.ini_options]
+pythonpath = [
+  ".",
+]
+
+[tool.poetry.scripts]
+get-openalex = "polus.aithena.jobs.getopenalex.__main__:app"
