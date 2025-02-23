@@ -9,11 +9,13 @@ from llama_index.embeddings.azure_openai import (
 )
 
 from aithena_services.common.azure import resolve_azure_deployment
-from aithena_services.envvars import (
+from aithena_services.config import (
     AZURE_OPENAI_EMBED_MODELS_DICT,
     AZURE_OPENAI_ENV_DICT,
 )
+from polus.aithena.common.logger import get_logger
 
+logger = get_logger("aithena_services.embeddings.azure_openai")
 
 class AzureOpenAIEmbedding(LlamaIndexAzureOpenAI):
     """Azure OpenAI embeddings."""
@@ -26,6 +28,7 @@ class AzureOpenAIEmbedding(LlamaIndexAzureOpenAI):
         that are listed as environment variables in the correct format.
         The format is `AZURE_OPENAI_DEPLOYMENT_EMBED_{name}={value}`.
         """
+        logger.debug(f"Listing Azure OpenAI embedding deployments")
         return list(AZURE_OPENAI_EMBED_MODELS_DICT.keys())
 
     list_models = list_deployments  # Alias
@@ -40,6 +43,7 @@ class AzureOpenAIEmbedding(LlamaIndexAzureOpenAI):
             kwargs["azure_deployment"] = resolve_azure_deployment(
                 deployment, AZURE_OPENAI_EMBED_MODELS_DICT
             )
+        logger.debug(f"Initializing Azure OpenAI embeddings with kwargs: {kwargs}")
         super().__init__(**kwargs)
 
     def aget_text_embeddings(self, texts: list[str]) -> list[list[float]]:

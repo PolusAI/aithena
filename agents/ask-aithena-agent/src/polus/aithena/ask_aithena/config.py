@@ -1,4 +1,5 @@
 """Configuration for Ask Aithena Agent."""
+from polus.aithena.common.logger import get_logger
 import os
 from dotenv import find_dotenv, load_dotenv
 
@@ -6,16 +7,24 @@ from dotenv import find_dotenv, load_dotenv
 # The values from the .env file will override the system environment variables.
 load_dotenv(find_dotenv(), override=True)
 
+logger = get_logger(__name__)
 
-DB_PORT = int(os.environ.get("DB_PORT", default="30333"))
-DB_HOST = os.environ.get("DB_HOST", default="localhost")
-DOC_COLLECTION = os.environ.get("DOC_COLLECTION", default="arxiv_abstracts_nomic768")
 AITHENA_SERVICE_URL = os.environ.get(
-    "AITHENA_SERVICES_URL", default="http://localhost:30080"
+    "AITHENA_SERVICES_URL", default="http://localhost:31111"
 )
-CHAT_MODEL = os.environ.get("CHAT_MODEL", default="gpt-4o")
+CHAT_MODEL = os.environ.get("CHAT_MODEL", default="llama3.1:8b")
 EMBED_MODEL = os.environ.get("EMBED_MODEL", default="nomic-embed-text")
+TIMEOUT = int(os.environ.get("TIMEOUT") or "180")
 
+EMBEDDING_TABLE = os.environ.get("EMBEDDING_TABLE", "openalex.nomic_embed_text_768")
+SIMILARITY_N = int(os.environ.get("SIMILARITY_N", default=10))
+
+logger.debug(f"Using Aithena service at {AITHENA_SERVICE_URL}")
+logger.debug(f"Using chat model {CHAT_MODEL}")
+logger.debug(f"Using embedding model {EMBED_MODEL}")
+logger.debug(f"aithena services timeout {TIMEOUT}")
+logger.debug(f"Using embedding table {EMBEDDING_TABLE}")
+logger.debug(f"Using similarity n {SIMILARITY_N}")
 
 CONTEXT_TAG = "context"
 DOCUMENT_TAG = "doc"

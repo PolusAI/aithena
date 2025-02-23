@@ -1,3 +1,4 @@
 NAMESPACE=test-aithena
 HOST=localhost
 NODE_PORT=30333
+COLLECTION_NAME=my-collection

@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "ask-aithena-agent"
-version = "0.1.2-dev1"
+version = "0.1.2-dev2"
 description = ""
 authors = ["Antoine Gerardin <antoine.gerardin@nih.gov>, Camilo Velez <camilo.velezramirez@nih.gov>"]
 readme = "README.md"
 packages = [{include = "polus", from = "src"}]
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.12"
+python = ">=3.10,<3.12"
 polus-aithena-common = {path= "../../common", develop=true}
 fastapi = "^0.114.1"
 uvicorn = "^0.30.6"

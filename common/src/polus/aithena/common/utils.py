@@ -31,3 +31,14 @@ def time_logger(func):
         exec_time_logger.info(f"Executed {func.__name__} in {execution_time:.4f} seconds")
         return result
     return wrapper
+
+def async_time_logger(func):
+    """Decorator that logs the execution time of an async function."""
+    async def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = await func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        exec_time_logger.info(f"Executed {func.__name__} in {execution_time:.4f} seconds")
+        return result
+    return wrapper

@@ -1,0 +1,38 @@
+services:
+  ollama:
+    image: ollama/ollama
+    volumes:
+      - type: bind
+        source: ./ollama_data # modify this to your ollama data directory
+        target: /root/.ollama
+
+    ports:
+      - "11434:11434"
+
+  pgvector:
+    image: pgvector/pgvector:pg17
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+
+    volumes:
+      - type: bind
+        source: ./pgdata # modify this to your ollama data directory
+        target: /var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    env_file:
+      - docker.env
+  aithena-services:
+    build:
+      context: ../../  # Set to the repository root, don't modify
+      dockerfile: services/aithena-services/Dockerfile
+    env_file:
+      - docker.env
+    environment:
+    - "OLLAMA_HOST=http://ollama:11434"
+    - "POSTGRES_HOST=pgvector"
+    - "POSTGRES_PORT=5432"
+    - "POSTGRES_USER=postgres"
+    - "POSTGRES_DB=postgres"
+    ports:
+      - "8000:80"

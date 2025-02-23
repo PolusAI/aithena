@@ -1,0 +1,3 @@
+- the remote call to ollama should be part of services (embed)
+- the postgrestools should be moved to a postgres db package for reuse
+- the openalexqueries should be moved to an openalex package

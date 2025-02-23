@@ -6,7 +6,12 @@ authors = ["Antoine Gerardin <antoine.gerardin@nih.gov>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.12"
+python = ">=3.10,<3.12"
+httpx = "^0.27.2"
+llama-index = "^0.12.0"
+
+[tool.poetry.group.test.dependencies]
+bumpversion = "^0.6.0"
 
 [build-system]
 requires = ["poetry-core"]

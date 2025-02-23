@@ -2,13 +2,10 @@
 """Ollama implementation based on LlamaIndex."""
 
 # pylint: disable=too-many-ancestors, W1203
-import logging
 from typing import Any, Sequence
 
 import requests  # type: ignore
-from llama_index.llms.ollama import Ollama as LlamaIndexOllama  # type: ignore
-
-from aithena_services.envvars import OLLAMA_HOST
+from aithena_services.config import OLLAMA_HOST, TIMEOUT
 from aithena_services.llms.types import Message
 from aithena_services.llms.types.base import AithenaLLM, chataithena, streamchataithena
 from aithena_services.llms.types.response import (
@@ -17,8 +14,10 @@ from aithena_services.llms.types.response import (
     ChatResponseGen,
 )
 from aithena_services.llms.utils import check_and_cast_messages
+from llama_index.llms.ollama import Ollama as LlamaIndexOllama  # type: ignore
+from polus.aithena.common.logger import get_logger
 
-logger = logging.getLogger("aithena_services.llms.ollama")
+logger = get_logger("aithena_services.llms.ollama")
 
 
 # TODO: check how to set multiple stop sequences, because Ollama supports it
@@ -47,19 +46,26 @@ class Ollama(LlamaIndexOllama, AithenaLLM):
 
     """
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, timeout=TIMEOUT, **kwargs: Any):
         if "base_url" not in kwargs or kwargs["base_url"] is None:
             kwargs["base_url"] = OLLAMA_HOST
-        logger.debug(f"Initalizing Ollama with kwargs: {kwargs}")
-        super().__init__(**kwargs)
+        if "request_timeout" in kwargs:
+            kwargs.pop("request_timeout")
+        logger.debug(f"Initalizing Ollama chat with kwargs: {kwargs}")
+        super().__init__(request_timeout=timeout, **kwargs)
 
     @staticmethod
-    def list_models(url: str = OLLAMA_HOST) -> list[str]:  # type: ignore
+    # type: ignore
+    def list_models(url: str | None = OLLAMA_HOST) -> list:
         """List available Ollama models."""
-        logger.debug(f"Listing Ollama models at {url}")
+        if url is None:
+            logger.debug(
+                "No Ollama url provided, listing llm models, returning empty list")
+            return []
+        logger.debug(f"Listing Ollama chat models at {url}")
         r = [
             x["name"]
-            for x in requests.get(url + "/api/tags", timeout=40).json()["models"]
+            for x in requests.get(url + "/api/tags", timeout=TIMEOUT).json()["models"]
         ]
         return [x for x in r if "embed" not in x]
 
