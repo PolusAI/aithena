@@ -25,6 +25,8 @@ docker_build/
 #logs
 *.out
 *.log
+*.csv
+*.txt
 
 # poetry
 poetry.lock

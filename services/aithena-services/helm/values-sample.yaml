@@ -3,7 +3,7 @@ replicaCount: 1
 image:
   repository: agerardin/aithena-services
   pullPolicy: IfNotPresent
-  tag: "0.1.0-dev3"
+  tag: "1.0.0-dev0"
 
 service:
   type: NodePort
@@ -27,6 +27,16 @@ secrets:
 env:
   - name: OLLAMA_HOST
     value: "http://service-ollama.test-aithena.svc.cluster.local:11434"
+    - name: POSTGRES_HOST
+    value: db_host
+  - name: POSTGRES_USER
+    value: db_user
+  - name: POSTGRES_PASSWORD
+    value: db_passwd
+  - name: POSTGRES_PORT
+    value: 5432
+  - name: POSTGRES_DB
+    value: db_name
 
 persistentVolume:
   storage: 5Mi

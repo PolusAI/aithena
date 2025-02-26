@@ -6,7 +6,7 @@ replicaCount: 1
 image:
   repository: agerardin/ask-aithena-agent
   pullPolicy: IfNotPresent
-  tag: "0.1.2-dev1"
+  tag: "0.1.2-dev2"
 
 service:
   type: NodePort
@@ -21,12 +21,17 @@ env:
     value: "nomic-embed-text"
   - name: CHAT_MODEL
     value: "llama3.1:latest"
-  - name: DB_HOST
-    value: "service-qdrant-qdrant-chart.ref.svc.cluster.local"
-  - name: DB_PORT
-    value: "6333"
-  - name: DOC_COLLECTION
-    value: "full_arxiv_abstracts_nomic768"
+  - name: EMBEDDING_TABLE
+    value: "openalex.nomic_embed_text_768"
+  - name: SIMILARITY_N
+    value: "10"
+  # QDRANT ENV - deprecated
+  # - name: DB_HOST
+  #   value: "service-qdrant-qdrant-chart.ref.svc.cluster.local"
+  # - name: DB_PORT
+  #   value: "6333"
+  # - name: DOC_COLLECTION
+  #   value: "full_arxiv_abstracts_nomic768"
 
 nodeSelector: {}
 

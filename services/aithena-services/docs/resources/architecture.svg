@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="700" viewBox="0 0 1000 700">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.15"/>
+    </filter>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#a0aec0" />
+    </marker>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1000" height="700" fill="#f8fafc" rx="10" ry="10"/>
+  
+  <!-- Title -->
+  <text x="500" y="50" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="600" text-anchor="middle" fill="#2d3748">Aithena Services Architecture</text>
+  
+  <!-- Arrows -->
+  <path d="M270,150 L380,150" stroke="#a0aec0" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M620,150 L730,150" stroke="#a0aec0" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M550,200 L550,310 L730,310" stroke="#a0aec0" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M500,200 L500,400" stroke="#a0aec0" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M500,500 L500,600" stroke="#a0aec0" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Nodes -->
+  <!-- App Client -->
+  <rect x="100" y="100" width="220" height="100" rx="8" ry="8" fill="white" stroke="#4299e1" stroke-width="2" filter="url(#shadow)"/>
+  <text x="210" y="140" font-family="Segoe UI, Arial, sans-serif" font-size="24" text-anchor="middle" fill="#4299e1">⚓</text>
+  <text x="210" y="170" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#2d3748">Your App or API Client</text>
+  
+  <!-- LiteLLM -->
+  <rect x="380" y="100" width="220" height="100" rx="8" ry="8" fill="white" stroke="#ed64a6" stroke-width="2" filter="url(#shadow)"/>
+  <text x="490" y="140" font-family="Segoe UI, Arial, sans-serif" font-size="24" text-anchor="middle" fill="#ed64a6">🧠</text>
+  <text x="490" y="170" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#2d3748">LiteLLM API Server</text>
+  <text x="490" y="190" font-family="Segoe UI, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#718096">(Port 4000)</text>
+  
+  <!-- Ollama -->
+  <rect x="730" y="100" width="220" height="100" rx="8" ry="8" fill="white" stroke="#ecc94b" stroke-width="2" filter="url(#shadow)"/>
+  <text x="840" y="140" font-family="Segoe UI, Arial, sans-serif" font-size="24" text-anchor="middle" fill="#ecc94b">🦙</text>
+  <text x="840" y="170" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#2d3748">Ollama</text>
+  <text x="840" y="190" font-family="Segoe UI, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#718096">(Local LLMs)</text>
+  
+  <!-- Cloud LLMs -->
+  <rect x="730" y="260" width="220" height="100" rx="8" ry="8" fill="white" stroke="#a0aec0" stroke-width="2" filter="url(#shadow)"/>
+  <text x="840" y="300" font-family="Segoe UI, Arial, sans-serif" font-size="24" text-anchor="middle" fill="#a0aec0">☁️</text>
+  <text x="840" y="330" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#2d3748">Cloud LLMs</text>
+  <text x="840" y="350" font-family="Segoe UI, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#718096">(OpenAI/Anthropic/Groq/etc.)</text>
+  
+  <!-- Aithena -->
+  <rect x="380" y="400" width="220" height="100" rx="8" ry="8" fill="white" stroke="#ed8936" stroke-width="2" filter="url(#shadow)"/>
+  <text x="490" y="440" font-family="Segoe UI, Arial, sans-serif" font-size="24" text-anchor="middle" fill="#ed8936">📦</text>
+  <text x="490" y="470" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#2d3748">Aithena Services</text>
+  <text x="490" y="490" font-family="Segoe UI, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#718096">(Memory API)</text>
+  
+  <!-- PGVector -->
+  <rect x="380" y="550" width="220" height="100" rx="8" ry="8" fill="white" stroke="#68d391" stroke-width="2" filter="url(#shadow)"/>
+  <text x="490" y="590" font-family="Segoe UI, Arial, sans-serif" font-size="24" text-anchor="middle" fill="#68d391">🔍</text>
+  <text x="490" y="620" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="600" text-anchor="middle" fill="#2d3748">PGVector</text>
+  <text x="490" y="640" font-family="Segoe UI, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#718096">(Vector DB)</text>
+</svg>

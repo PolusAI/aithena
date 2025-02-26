@@ -1,113 +1,136 @@
-# aithena-services 0.1.0-dev3
+# Aithena Services
 
-Aithena-services provide a unified way to interact with many llms.
+<p align="center">
+  <img src="https://img.shields.io/badge/version-1.0.0--dev0-blue" alt="Version 1.0.0-dev0">
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="License: MIT">
+</p>
 
-It uses llama-index to interact with several existing llm backends:
-- ollama
-- openai
-- azure_openai
+> **Complete AI Stack with Powerful Memory Capabilities**
 
-The package can be used directly as a python client or can be deployed
-as a rest service.
+## 🚀 Building the Complete AI Development Environment
 
-## Configuration
+Aithena Services is part of a powerful, integrated AI development stack that brings together local and cloud LLMs, vector memory, and database functionality through a unified API. This complete solution enables you to build sophisticated AI applications with minimal setup and maximum flexibility.
 
-This service is a client to existing llm backends that must be deployed independently.
-You will need to tell aithena services which backends it can talk to by defining a set of environment variables.
-Available environment variables are in an [env file](.env-sample) and how to configure aithena-services is described [here](docs/env.md)
+While Aithena Services specializes in robust vector memory and database functionality, it's designed to work as part of a complete ecosystem that includes LiteLLM for model access, Ollama for local LLMs, and vector database capabilities — all through a consistent, OpenAI-compatible API.
 
+### 🧠 The Memory Layer for Your AI Applications
 
-## Example Deployment
+Aithena Services handles the storage and retrieval of information while integrating perfectly with language model providers, letting you build more sophisticated AI solutions with long-term memory capabilities.
 
-They are many ways to deploy aithena services.
+**⚡ Looking for quick deployment?** Check out our [Docker Compose Setup](docs/docker_compose.md) to get a complete AI stack running in minutes.
 
-Helm deployment charts are found [here](helm).
+## 🏗️ System Architecture
 
-For testing purposes, the next section will describe steps by steps how to set up aithena services using only docker containers.
+<p align="center">
+  <img src="docs/resources/architecture.svg" alt="Aithena Services Architecture" width="800">
+</p>
 
+The diagram above shows how Aithena Services fits into a complete AI stack, providing vector memory capabilities that integrate with LiteLLM for a unified solution. 🧩 Each component plays a vital role in the complete ecosystem.
 
-### Prerequisites
+## ✨ Key Features
 
-We will create a docker network and deploy ollama and aithena services on this network.
+- **Vector Database**: Built-in PostgreSQL/pgvector integration for efficient vector storage and similarity search
+- **Seamless Integration**: Works perfectly with LiteLLM for a complete AI stack
+- **Memory API**: Clean, well-documented API for storing and retrieving vector embeddings
+- **Docker Ready**: Deploy as a standalone service or as part of a complete stack
+- **Optimized Performance**: Efficient cosine similarity search for finding relevant content
 
-The following variables will be used:
-Update the image version to match the current version.
+## 🤔 Why Choose Aithena Services?
 
-```shell
-DOCKER_NETWORK=aithena-net
-OLLAMA_PORT=11434
-OLLAMA_CONTAINER_NAME=ollama
-AITHENA_SERVICES_PORT=9000
-AITHENA_SERVICES_IMAGE=polusai/aithena-services:0.1.0-dev3
+- **Focus on Memory**: Specialized in vector storage and retrieval, doing one thing exceptionally well
+- **Cloud-Agnostic**: Works with any LLM provider through LiteLLM integration
+- **Simple API**: Clean, consistent interface for all memory operations
+- **Production Ready**: Designed for reliability and performance in production environments
+- **Active Development**: Constantly improving with new features and optimizations
+
+## 🐳 Recommended Deployment
+
+**We strongly recommend using our Docker Compose stack** for the best experience with Aithena Services. This approach gives you a complete, pre-configured AI development environment with just a few commands.
+
+```bash
+# Configure and start
+cp .env.sample .env
+cp config_sample.yaml config.yaml
+# Edit .env and config.yaml with your settings
+docker compose up -d
 ```
 
-```shell
+For detailed setup instructions, see our [Docker Compose guide](docs/docker_compose.md).
 
-docker network create ${DOCKER_NETWORK}
-docker run -p ${OLLAMA_PORT}:11434 --net ${DOCKER_NETWORK} --name ${OLLAMA_CONTAINER_NAME} ollama/ollama
+### 🚀 Why Docker Compose is Better
+
+Our Docker Compose stack provides:
+
+- **Unified API Gateway**: Connect to multiple LLM providers (OpenAI, Anthropic, Claude, Groq, etc.) through a single API
+- **Integrated Memory Layer**: Seamless vector storage for building apps with long-term memory and context
+- **Embedding Generation**: Built-in support for creating and storing embeddings from various providers
+- **Local Model Support**: Run open-source models locally with Ollama integration
+- **Pre-configured Components**: All services are pre-configured to work together perfectly
+- **One-command Deployment**: Get your entire AI stack running with a single command
+
+The complete stack includes:
+
+- **Aithena Services**: Memory/vector functionality
+- **LiteLLM**: OpenAI-compatible API for model access
+- **Ollama**: Local model hosting
+- **PGVector**: Vector database
+- **LiteLLM UI**: Web dashboard for monitoring and management
+
+While you can run Aithena Services as a standalone memory component, the full stack delivers a significantly more powerful developer experience.
+
+## 🔍 Quick Usage Examples
+
+### Store Vector Embeddings
+
+```bash
+curl -X POST http://localhost:8000/memory/pgvector/insert \
+  -H "Content-Type: application/json" \
+  -d '{
+    "table_name": "my_documents",
+    "id": "doc1",
+    "vector": [0.1, 0.2, 0.3, ...],
+    "metadata": {"title": "Important Document", "content": "This contains key information"}
+  }'
 ```
 
-Here we start the ollama container (the image will pulled if not present),
-give it the name ollama, and expose it to the network on port 11434.
+### Search for Similar Content
 
-A simple way to deploy aithena services for testing is to use our existing docker image
-
-```shell
-OLLAMA_HOST=http://${OLLAMA_CONTAINER_NAME}:${OLLAMA_PORT}
-docker run -it -p ${AITHENA_SERVICES_PORT}:80 --env OLLAMA_HOST=${OLLAMA_HOST}  --net ${DOCKER_NETWORK} --name ais ${AITHENA_SERVICES_IMAGE}
+```bash
+curl -X POST http://localhost:8000/memory/pgvector/search \
+  -H "Content-Type: application/json" \
+  -d '{
+    "table_name": "my_documents",
+    "vector": [0.1, 0.2, 0.3, ...],
+    "n": 5
+  }'
 ```
 
-Note that we configured aithena services to reach ollama using the service exposed by the docker network.
+## 📚 Documentation
 
+Comprehensive documentation is available to help you get started:
 
-### Configure ollama
+- [Quick Start Guide](docs/quickstart.md)
+- [Docker Compose Setup](docs/docker_compose.md)
+- [API Reference](docs/api.md)
+- [Memory Features](docs/memory.md)
+- [Environment Variables](docs/env.md)
+- [Project Structure](docs/structure.md)
 
-The last thing we need to do is to pull the models we want to test.
-This can be done directly through aithena services.
+## 🔌 Integration with LiteLLM
 
-We will pull nomic-embed-text for embedding and llama3.1 for chat.
+When deployed with Docker Compose, Aithena Services integrates perfectly with LiteLLM through a convenient passthrough, allowing you to:
 
-```shell
-curl -X POST  http://0.0.0.0:${AITHENA_SERVICES_PORT}/ollama/pull/nomic-embed-text
-curl -X POST  http://0.0.0.0:${AITHENA_SERVICES_PORT}/ollama/pull/llama3.1:latest
-```
+1. Access vector memory at `http://localhost:4000/memory/...`
+2. Use LLM functionality at `http://localhost:4000/chat/completions`
 
-## Tests
+This means your application only needs to talk to a single API endpoint for both memory and LLM functionality.
 
-Test embed:
+## 👥 Community and Support
 
-```shell
-curl -X POST http://localhost:${AITHENA_SERVICES_PORT}/embed/nomic-embed-text/generate -d '"This is a test embedding"'
-```
+- **GitHub Issues**: Report bugs or request features
+- **Contributions**: Pull requests are welcome
+- **Documentation**: Detailed examples and guides available
 
-Test chat:
+## 📄 License
 
-```shell
-curl -X POST http://localhost:${AITHENA_SERVICES_PORT}/chat/llama3.1/generate\?stream\=False -d '[{"role": "user", "content": "What is the capital of France?"}]'
-```
-
-## Development
-
-It can be useful to deploy aithena service as a regular process.
-This snippet assume that [poetry](https://python-poetry.org/) is available on your path.
-
-```shell
-cd services/aithena-services
-python -m venv .venv
-source .ven/bin/activate
-poetry install
-uvicorn --host 0.0.0.0 --port ${PORT}  main:app
-```
-
-## Building the docker image
-
-|| TODO: FIX how we build the docker image.
-
-Currently the image needs to be build from the top-level directory:
-
-`cd services/aithena-services`
-`./docker/build-docker.sh`
-
-Make sure no .env file is present is `services/aithena-services/src/aithena_services`
-or this file will be committed with the image leaking your secrets and
-it will also prevent any later configuration attempt.
+Aithena Services is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

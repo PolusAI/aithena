@@ -1,35 +1,107 @@
-# AIthena Services
-## Model Configuration
+# Environment Variables for Aithena Services
 
-# .env
-1. Rename `.env-sample` to `.env`
-2. Replace the values of the environment variables with the correct values
+This document describes the environment variables used to configure Aithena Services with a focus on the memory and vector database functionality, which is now the primary purpose of the service.
 
-Your .env file should **only** contain variables of the services you want to use. For example, if you will not use OpenAI, you must remove (or comment out) the `OPENAI_API_KEY` variable.
+## Database Configuration (Primary Focus)
 
-### Docker
-*IMPORTANT (Only if using `.env` file for Docker)* : Do not include quotation marks (") in your .env file, for example:
+### PostgreSQL / PGVector
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `POSTGRES_HOST` | PostgreSQL host | `localhost` | No |
+| `POSTGRES_PORT` | PostgreSQL port | `5432` | No |
+| `POSTGRES_USER` | PostgreSQL username | `postgres` | No |
+| `POSTGRES_PASSWORD` | PostgreSQL password | `postgres` | No |
+| `POSTGRES_DB` | PostgreSQL database name | `postgres` | No |
+
+## Docker Compose Configuration
+
+When using Docker Compose for the complete stack deployment, additional environment variables are used to configure the integrated services:
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `OLLAMA_DATA_PATH` | Path to Ollama data directory | `./ollama` | No |
+| `PGVECTOR_DATA_PATH` | Path to PGVector data directory | `./pgdata` | No |
+| `PGVECTOR_PASSWORD` | PGVector database password | `password` | Yes |
+| `PGVECTOR_USER` | PGVector database username | `postgres` | No |
+| `PGVECTOR_DB` | PGVector database name | `aithena` | No |
+| `LITELLM_DB_USER` | LiteLLM database username | `llmproxy` | No |
+| `LITELLM_DB_PASSWORD` | LiteLLM database password | `litellmpassword` | Yes |
+| `LITELLM_MASTER_KEY` | Master key for LiteLLM API authentication | None | Recommended for production |
+
+
+## LLM Provider Configuration (For Complete Stack Only)
+
+These variables are used when deploying the complete stack with Docker Compose and configure the LiteLLM component, not Aithena Services directly:
+
+### OpenAI
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `OPENAI_API_KEY` | OpenAI API key | None | Only if using OpenAI models |
+
+### Azure OpenAI
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `AZURE_OPENAI_API_KEY` | Azure OpenAI API key | None | Only if using Azure OpenAI |
+| `AZURE_OPENAI_ENDPOINT` | Azure OpenAI endpoint URL | None | Only if using Azure OpenAI |
+| `AZURE_OPENAI_API_VERSION` | Azure OpenAI API version | None | Only if using Azure OpenAI |
+
+
+### Anthropic
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `ANTHROPIC_API_KEY` | Anthropic API key | None | Only if using Claude models |
+
+### Groq
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `GROQ_API_KEY` | Groq API key | None | Only if using Groq models |
+
+## Using Environment Variables
+
+You can set environment variables in several ways:
+
+1. In a `.env` file in the project root
+2. As environment variables in your shell
+3. In Docker Compose through the `.env` file or `environment` section
+
+### Example `.env` File for Standalone Memory Service
+
+```bash
+# Database Configuration
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=secure-password
+POSTGRES_DB=aithena
 ```
-AZURE_OPENAI_API_KEY="abc123" # this will not work
-AZURE_OPENAI_API_KEY=abc123 # this is correct
+
+### Example `.env` File for Complete Stack Deployment
+
+```bash
+# Database Configuration
+POSTGRES_HOST=pgvector
+POSTGRES_PASSWORD=secure-password
+POSTGRES_DB=aithena
+
+# Docker Compose Configuration
+PGVECTOR_PASSWORD=secure-password
+LITELLM_DB_PASSWORD=another-secure-password
+
+# Optional: LLM Provider Configuration
+OPENAI_API_KEY=sk-your-openai-key
+ANTHROPIC_API_KEY=your-anthropic-key
+GROQ_API_KEY=your-groq-key
+OLLAMA_HOST=http://ollama:11434
 ```
 
+## Important Notes
 
-## Ollama
-You need to set up the environment variable `OLLAMA_HOST` with the correct url where you are serving Ollama. For example, if you use the default url, you would need to set up
-```
-OLLAMA_HOST="http://localhost:11434"
-```
-
-**Aithena-Services will automatically scan the Ollama server to check which models are available. This includes chat and embed models.**
-
-
-## OpenAI
-You need to set up the environment variable `OPENAI_API_KEY` with the value of your API key.
-```
-OPENAI_API_KEY="sk-projHDFIADFHDFIA"
-```
-**Aithena-Services will automatically scan the OpenAI server to check which models are available. This includes only chat models. Support for OpenAI embedding models has not been implemented.**
-
-## Azure OpenAI
-Check [AzureEnv](AzureEnv.md)
+- Never put quotation marks around values in `.env` files
+- API keys should be kept secret and not committed to version control
+- For production use, always use strong passwords
+- When deploying standalone memory service, focus on the PostgreSQL configuration only 

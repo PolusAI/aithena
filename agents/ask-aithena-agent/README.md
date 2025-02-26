@@ -1,8 +1,8 @@
-# Ask Aithena (v0.1.2-dev1)
+# Ask Aithena (v0.1.2-dev2)
 
 The AskAithena agent is a high level services that implements the basic `ask` rag function.
 Provided with a question or a query, it will retrieve relevant documents from a database
-and feed those document to a chat model to generate a response.
+and feed those documents to a chat model to generate a response.
 
 See `agents/ask-aithena/src/polus/aithena/ask_aithena/config.py` for available environment variables to help configure and customize the agent.
 
@@ -12,7 +12,7 @@ Build the container:
 `./build-docker.sh`
 
 Start the container :
-`docker run -it --rm -${ASK_AITHENA_AGENT_PORT}:8000 polusai/${ASK_AITHENA_AGENT_IMAGE_NAME}:${ASK_AITHENA_AGENT_VERSION}`
+`docker run -it --rm -p ${ASK_AITHENA_AGENT_PORT}:8000 polusai/${ASK_AITHENA_AGENT_IMAGE_NAME}:${ASK_AITHENA_AGENT_VERSION}`
 
 Test:
 

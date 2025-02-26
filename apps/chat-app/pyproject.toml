@@ -9,6 +9,7 @@ packages = [{include = "polus", from = "src"}]
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
 solara = "^1.39.0"
+markdown = "^3.7"
 
 [tool.poetry.group.dev.dependencies]
 bumpversion = "^0.6.0"

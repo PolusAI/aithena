@@ -1,6 +1,6 @@
 
 replicaCount: 1
-
+# schedule: "0 0 1 * *" # every month
 schedule: "*/1 * * * *"
 ttlSecondsAfterFinished: 86400 # keep failing pod 1 day for debugging
 backoffLimit: 4

@@ -22,7 +22,7 @@ logger = get_logger(__file__)
 class ArxivQdrantClient:
     """A client that simplifies interaction with the Qdrant database."""
 
-    def __init__(self, host: str = "http://localhost", port: int = 6333) -> None:
+    def __init__(self, host: str = "localhost", port: int = 6333) -> None:
         self.node_url = f"{host}:{port}"
         logger.debug(f"connecting to qdrant on host {host} and port {port}")
         self.client = QdrantClient(host=host, port=port, timeout=100)

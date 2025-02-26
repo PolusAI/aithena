@@ -8,7 +8,7 @@ from .ask_aithena import (  # noqa
     chat_request_stream,
 )
 
-__version__ = "0.1.2-dev1"
+__version__ = "0.1.2-dev2"
 
 
 __all__ = [

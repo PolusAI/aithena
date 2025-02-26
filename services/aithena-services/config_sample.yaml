@@ -1,0 +1,63 @@
+model_list:
+  - model_name: llama3.1
+    litellm_params:
+      model: ollama_chat/llama3.1:latest
+      api_base: os.environ/OLLAMA_HOST
+    model_info:
+      supports_function_calling: true
+  - model_name: llama3.2
+    litellm_params:
+      model: ollama_chat/llama3.2:latest
+      api_base: os.environ/OLLAMA_HOST
+    model_info:
+      supports_function_calling: true
+  - model_name: r1
+    litellm_params:
+      model: ollama_chat/deepseek-r1:8b
+      api_base: os.environ/OLLAMA_HOST
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+  - model_name: gpt-4o
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+  - model_name: llama-3.3-70b-versatile
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.environ/GROQ_API_KEY
+  - model_name: llama-3.3-70b-specdec
+    litellm_params:
+      model: groq/llama-3.3-70b-specdec
+      api_key: os.environ/GROQ_API_KEY
+  - model_name: claude-3
+    litellm_params:
+      model: anthropic/claude-3-5-haiku-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: claude-3-5-sonnet
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: claude-3-7-sonnet
+    litellm_params:
+      model: anthropic/claude-3-7-sonnet-20250219
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: nomic
+    litellm_params:
+      model: ollama/nomic-embed-text
+      api_base: os.environ/OLLAMA_HOST
+      drop_params: true
+
+general_settings: # do not modify this section
+  pass_through_endpoints:
+    - path: "/ollama/ps"
+      target: "http://ollama:11434/api/ps"
+    - path: "/ollama/pull"
+      target: "http://ollama:11434/api/pull"
+    - path: "/ollama/delete"
+      target: "http://ollama:11434/api/delete"
+    - path: "/ollama/list"
+      target: "http://ollama:11434/api/tags"
+    - path: "/memory"
+      target: "http://aithena-services:8000/memory"

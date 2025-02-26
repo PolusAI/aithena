@@ -1,0 +1,34 @@
+replicaCount: 1
+
+schedule: "0 9 1 * *" # 9AM UTC on the first day of the month
+ttlSecondsAfterFinished: 86400 # Keep the pod for debugging for 1 day
+backoffLimit: 4
+
+image:
+  repository: camilovelezr/get-openalex
+  pullPolicy: IfNotPresent
+  tag: "0.1.0-dev1"
+
+container:
+  restartPolicy: "OnFailure"
+  mountPath: "/mnt/outdir"
+
+env:
+  - name: ALL_LAST_MONTH
+    value: 1
+  - name: OUT_DIR
+    value: "/mnt/outdir" # must match container.mountPath
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "1"
+
+persistentVolume:
+  storage: 500Gi
+  hostPath: /path/to/openalex-data
+
+persistentVolumeClaim:
+  accessModes:
+    - ReadWrite
+  storage: 500Gi

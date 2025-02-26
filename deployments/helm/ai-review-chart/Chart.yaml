@@ -1,0 +1,22 @@
+apiVersion: v2
+name: ai-review-chart
+description: Deploy the ai-review application stack.
+type: application
+
+version: 0.1.0
+appVersion: "0.2.0-dev2"
+
+dependencies:
+  - name: qdrant-chart
+    version: 0.1.0
+    repository: file://../../../dbs/qdrant-db/helm/qdrant-chart
+  - name: ollama-chart
+    version: 0.1.0
+    repository: file://../../../backends/ollama-backend/helm/ollama-chart
+  - name: aithena-services-chart
+    version: 0.1.0
+    repository: file://..//../../services/helm/aithena-services-chart
+  - name: ai-review-app-chart
+    version: 0.1.0
+    repository: file://../../../apps/ai-review-app/helm
+

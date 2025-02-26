@@ -1,13 +1,17 @@
 
 # Helm deployments
 
-This directory contains kubernetes deployments of 
+This directory contains full stack kubernetes deployments of 
 various projects using helm charts.
 
 Currently:
 
 - `ask-aithena-chart` rag app
 - `arxiv-ingestion-job-chart` arxiv ingestion
+- `ai-review-chart` ai assisted literature review app
+
+If you would rather deploy only an app and reuse the underlying services and agents,
+please deploy the individual app helm charts.
 
 For any helm chart:
 

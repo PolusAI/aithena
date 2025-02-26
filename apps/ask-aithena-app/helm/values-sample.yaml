@@ -6,7 +6,10 @@ replicaCount: 1
 image:
   repository: agerardin/ask-aithena-app
   pullPolicy: IfNotPresent
-  tag: "0.1.0-dev3"
+  tag: "0.1.0-dev5"
+
+container:
+  command: ["serve"]
 
 service:
   type: NodePort

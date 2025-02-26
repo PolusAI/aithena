@@ -20,4 +20,9 @@ RUN pip3 install "${EXEC_DIR}/aithena/${TOOL_DIR}"
 
 EXPOSE 8765
 
-CMD ["solara", "run", "aithena/apps/ask-aithena-app/src/polus/aithena/ask_aithena_app/dashboard.py", "--host=0.0.0.0", "--production"]
+# if using with nginx, change the root-path to the nginx endpoint:
+# change --rooth-path /{endpoint} to the nginx endpoint
+# e.g. --root-path /askaithena
+# if not using nginx, remove the --root-path argument
+# e.g. CMD ["solara", "run", "aithena/apps/ask-aithena-app/src/polus/aithena/ask_aithena_app/dashboard.py", "--host=0.0.0.0", "--production"]
+CMD ["solara", "run", "aithena/apps/ask-aithena-app/src/polus/aithena/ask_aithena_app/dashboard.py", "--host=0.0.0.0", "--production", "--root-path", "/askaithena"]

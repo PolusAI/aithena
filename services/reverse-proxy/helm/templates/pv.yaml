@@ -1,0 +1,3 @@
+{{- include "aithena-lib-chart.pv" (list . "chart.pv") -}}
+{{- define "chart.pv" -}} {}
+{{- end -}}

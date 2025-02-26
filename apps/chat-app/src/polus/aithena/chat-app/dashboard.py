@@ -12,7 +12,7 @@ from typing import Callable
 import requests  # type: ignore
 import solara
 import solara.lab
-from component_utils import EditableMessage, ModelLabel, ModelRow  # type: ignore
+from component_utils import EditableMessage, ModelLabel, SelectOptions  # type: ignore
 from solara.alias import rv
 
 logger = logging.getLogger("aithena-agent-chat")
@@ -27,17 +27,6 @@ logger.info(f"Started Aithena Chat Agent with API URL: {API_URL}")
 
 FILE_PATH = Path(__file__).parent.absolute()
 
-# PROMPT_DEFAULT = """
-# You are a helpful assistant named Aithena.
-# Respond to users with witty, entertaining, and thoughtful answers.
-# User wants short answers, maximum five sentences.
-# If user asks info about yourself or your architecture,
-# respond with info about your LLM model and its capabilities.
-# Do not finish every sentence with a question.
-# If you ask a question, always include a question mark.
-# Do not introduce yourself to user if user does not ask for it.
-# Never explain to user how your answers are.
-# """
 PROMPT_DEFAULT = """
 You are an expert scientific assistant named Aithena.
 Respond to users with knowledgeable, informative, and thoughtful answers.
@@ -50,7 +39,7 @@ PROMPT = os.getenv("AITHENA_CHAT_PROMPT", PROMPT_DEFAULT)
 MESSAGES = solara.reactive([{"role": "system", "content": PROMPT}])
 
 
-def add_chunk_to_ai_message(chunk: str):
+def add_chunk_to_response(chunk: str):
     """Add chunk to assistant message."""
     MESSAGES.value = [
         *MESSAGES.value[:-1],
@@ -61,7 +50,7 @@ def add_chunk_to_ai_message(chunk: str):
     ]
 
 
-def change_llm_name(set_llm_name, reset_on_change, set_model_labels, *args):
+def select_llm(set_llm_name, reset_on_change, set_model_labels, *args):
     """Change the selected LLM."""
     set_llm_name(args[-1])
     if reset_on_change:
@@ -144,17 +133,15 @@ DEFAULT_LLM = os.getenv("AITHENA_CHAT_DEFAULT_MODEL", "")
 if LLMS_AVAILABLE == []:
     raise ValueError("No LLMs available. Please check the LLM service.")
 elif DEFAULT_LLM in LLMS_AVAILABLE:
-    DEFAULT_LLM = DEFAULT_LLM 
+    DEFAULT_LLM = DEFAULT_LLM
 else:
     DEFAULT_LLM = LLMS_AVAILABLE[0]
 
-CONTEXT_WINDOW_SIZE = os.getenv("AITHENA_CHAT_CONTEXT_WINDOW_SIZE", "2048")
+# CONTEXT_WINDOW_SIZE = os.getenv("AITHENA_CHAT_CONTEXT_WINDOW_SIZE", "2048")
 
 
 @ solara.component
 def Page():
-    edit_index = solara.reactive(None)
-    current_edit_value = solara.reactive("")
 
     solara.Style(FILE_PATH.joinpath("style.css"))
     solara.Title("Aithena")
@@ -165,7 +152,7 @@ def Page():
 
     edit_mode, set_edit_mode = solara.use_state(False)
 
-    context_window, set_context = solara.use_state(int(CONTEXT_WINDOW_SIZE))
+    # context_window, set_context = solara.use_state(int(CONTEXT_WINDOW_SIZE))
 
     user_message_count = len(
         [m for m in MESSAGES.value if m["role"] == "user"])
@@ -174,13 +161,18 @@ def Page():
     model_labels, set_model_labels = solara.use_state({})
     user_query, set_user_query = solara.use_state("")
 
+    edit_index = solara.reactive(None)
+
+    current_edit_value = solara.reactive("")
+
     def call_llm():
         if user_message_count == 0:
             return
         logger.info(f"Calling LLM with {MESSAGES.value}")
         response = requests.post(
             get_chat_url(llm_name),
-            params={"stream": True, "num_ctx": context_window},
+            # params={"stream": True, "num_ctx": context_window},
+            params={"stream": True},
             json=MESSAGES.value,
             timeout=120,
             stream=True,
@@ -193,7 +185,7 @@ def Page():
             logger.debug(f"Received line: {line}")
             if not STOP_STREAMING.value:
                 if line:
-                    add_chunk_to_ai_message(json.loads(line)["delta"])
+                    add_chunk_to_response(json.loads(line)["delta"])
             else:
                 STOP_STREAMING.value = False
                 break
@@ -211,18 +203,18 @@ def Page():
             "overflow-y": "auto",
         },
     ):
-        ModelRow(
+        SelectOptions(
             LLMS_AVAILABLE,
             llm_name,
             set_llm_name,
             set_model_labels,
-            change_llm_name,
+            select_llm,
             reset_on_change,
             set_reset_on_change,
             MESSAGES.set,
             set_edit_mode,
-            context_window,
-            set_context,
+            # context_window,
+            # set_context,
         )
         with solara.lab.ChatBox():
             for index, item in enumerate(MESSAGES.value):

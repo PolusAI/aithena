@@ -11,7 +11,6 @@ spec:
   resources:
     requests:
       storage: {{required "Provide requested storage size." .Values.persistentVolumeClaim.storage | quote}}
-  storageClassName: {{ .Values.persistentVolumeClaim.storageClass | default "manual" | quote }}
   {{- end -}}
 
 {{- define "aithena-lib-chart.pvc" -}}
