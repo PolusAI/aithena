@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts-loading
+  namespace: box
+data:
+  01-enable-extensions.sql: |
+    -- Enable only essential extensions for OpenAlex loading
+    CREATE EXTENSION IF NOT EXISTS vector;    -- For embeddings
+    CREATE EXTENSION IF NOT EXISTS pg_trgm;   -- For fuzzy text search
+    
+    -- Create OpenAlex schema
+    CREATE SCHEMA IF NOT EXISTS openalex;
+    
+    -- Grant permissions
+    GRANT ALL ON SCHEMA openalex TO "AithenaAdmin";
+    GRANT USAGE ON SCHEMA openalex TO "AithenaAdmin";
+    ALTER DEFAULT PRIVILEGES IN SCHEMA openalex GRANT ALL ON TABLES TO "AithenaAdmin";
+    ALTER DEFAULT PRIVILEGES IN SCHEMA openalex GRANT ALL ON SEQUENCES TO "AithenaAdmin";
+    
+  02-performance-settings.sql: |
+    -- Set performance parameters that require superuser
+    ALTER SYSTEM SET huge_pages = 'try';
+    ALTER SYSTEM SET max_prepared_transactions = 100;
+    
+    -- Reload configuration
+    SELECT pg_reload_conf();
+    
+  03-create-utility-functions.sql: |
+    -- Create a function to build indexes in parallel (useful after loading)
+    CREATE OR REPLACE FUNCTION openalex.create_indexes_parallel(
+        p_table_name text,
+        p_indexes text[]
+    ) RETURNS void AS $$
+    DECLARE
+        v_index text;
+        v_start_time timestamp;
+        v_end_time timestamp;
+    BEGIN
+        FOREACH v_index IN ARRAY p_indexes
+        LOOP
+            v_start_time := clock_timestamp();
+            
+            EXECUTE v_index;
+            
+            v_end_time := clock_timestamp();
+            RAISE NOTICE 'Index created in %s', v_end_time - v_start_time;
+        END LOOP;
+    END;
+    $$ LANGUAGE plpgsql;
+    
+    -- Create a function to optimize tables after bulk loading
+    CREATE OR REPLACE FUNCTION openalex.optimize_table(p_table_name text) RETURNS void AS $$
+    BEGIN
+        RAISE NOTICE 'Running VACUUM ANALYZE on %', p_table_name;
+        EXECUTE format('VACUUM ANALYZE %I', p_table_name);
+        
+        RAISE NOTICE 'Running REINDEX on %', p_table_name;
+        EXECUTE format('REINDEX TABLE %I', p_table_name);
+        
+        RAISE NOTICE 'Optimization complete for %', p_table_name;
+    END;
+    $$ LANGUAGE plpgsql;
+    
+    -- Function to disable all indexes on a table (for bulk loading)
+    CREATE OR REPLACE FUNCTION openalex.disable_indexes(p_schema text, p_table text) 
+    RETURNS TABLE(index_name text, index_def text) AS $$
+    BEGIN
+        RETURN QUERY
+        SELECT 
+            indexname::text,
+            indexdef::text
+        FROM pg_indexes 
+        WHERE schemaname = p_schema 
+        AND tablename = p_table
+        AND indexname NOT LIKE '%_pkey'; -- Keep primary keys
+        
+        -- Drop the indexes
+        FOR index_name IN 
+            SELECT indexname 
+            FROM pg_indexes 
+            WHERE schemaname = p_schema 
+            AND tablename = p_table
+            AND indexname NOT LIKE '%_pkey'
+        LOOP
+            EXECUTE format('DROP INDEX %I.%I', p_schema, index_name);
+        END LOOP;
+    END;
+    $$ LANGUAGE plpgsql;

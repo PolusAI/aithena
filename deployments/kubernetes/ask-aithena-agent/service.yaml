@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ask-aithena-agent-service
+  namespace: box
+spec:
+  selector:
+    app: ask-aithena-agent
+  ports:
+  - port: 8000
+    targetPort: 8000
+    nodePort: 32105
+    protocol: TCP
+    name: http
+  type: NodePort

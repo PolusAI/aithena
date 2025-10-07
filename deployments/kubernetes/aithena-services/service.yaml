@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: aithena-services-service
+spec:
+  selector:
+    app: aithena-services
+  ports:
+  - port: 8000
+    targetPort: 8000
+    nodePort: 32103
+    protocol: TCP
+    name: http
+  type: NodePort

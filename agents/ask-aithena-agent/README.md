@@ -1,4 +1,4 @@
-# Ask Aithena (v0.1.2-dev2)
+# Ask Aithena (v1.1.4)
 
 The AskAithena agent is a high level services that implements the basic `ask` rag function.
 Provided with a question or a query, it will retrieve relevant documents from a database
@@ -11,8 +11,13 @@ See `agents/ask-aithena/src/polus/aithena/ask_aithena/config.py` for available e
 Build the container:
 `./build-docker.sh`
 
-Start the container :
-`docker run -it --rm -p ${ASK_AITHENA_AGENT_PORT}:8000 polusai/${ASK_AITHENA_AGENT_IMAGE_NAME}:${ASK_AITHENA_AGENT_VERSION}`
+Start the container with prompts directory mounted:
+```shell
+docker run -it --rm \
+  -p ${ASK_AITHENA_AGENT_PORT}:8000 \
+  -v $(pwd)/src/polus/aithena/ask_aithena/prompts:/opt/executables/prompts \
+  polusai/${ASK_AITHENA_AGENT_IMAGE_NAME}:${ASK_AITHENA_AGENT_VERSION}
+```
 
 Test:
 
@@ -38,7 +43,16 @@ We will also need to deploy qdrant.
 Then you can deploy the agent:
 
 ```shell
-docker run -it --rm -p${ASK_AITHENA_AGENT_NODEPORT}:8000 --env AITHENA_SERVICE_URL=${AITHENA_SERVICE_URL} --env DB_HOST=${DB_HOST} --env DB_PORT=${DB_PORT} --env DOC_COLLECTION=${DOC_COLLECTION}  --net ${DOCKER_NETWORK} --name ask-agent polusai/ask-aithena-agent:${ASK_AITHENA_AGENT_IMAGE_VERSION}
+docker run -it --rm \
+  -p${ASK_AITHENA_AGENT_NODEPORT}:8000 \
+  --env AITHENA_SERVICE_URL=${AITHENA_SERVICE_URL} \
+  --env DB_HOST=${DB_HOST} \
+  --env DB_PORT=${DB_PORT} \
+  --env DOC_COLLECTION=${DOC_COLLECTION} \
+  -v $(pwd)/src/polus/aithena/ask_aithena/prompts:/opt/executables/prompts \
+  --net ${DOCKER_NETWORK} \
+  --name ask-agent \
+  polusai/ask-aithena-agent:${ASK_AITHENA_AGENT_IMAGE_VERSION}
 ```
 
 # Test

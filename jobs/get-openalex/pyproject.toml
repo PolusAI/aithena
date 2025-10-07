@@ -1,32 +1,61 @@
-[tool.poetry]
-authors = ["Camilo Velez <camilo.velezramirez@nih.gov>"]
-description = "get-openalex"
+[project]
 name = "get-openalex"
-packages = [{include = "polus", from = "src"}]
-readme = "README.md"
 version = "0.1.0-dev1"
+description = "get-openalex - Tool for downloading OpenAlex records from their S3 bucket and interacting with OpenAlex REST API"
+authors = [{ name = "Camilo Velez", email = "camilo.velezramirez@nih.gov" }]
+requires-python = ">=3.12"
+readme = "README.md"
+dependencies = [
+    "boto3>=1.35.63,<2",
+    "tqdm>=4.67.0,<5",
+    "typer>=0.12.5,<0.13",
+    "openalex-types",
+    "python-dotenv>=1.0.0,<2",
+    "requests>=2.31.0,<3",
+    "aiohttp>=3.9.1,<4",
+    "pydantic>=2.5.2,<3",
+    "sqlmodel>=0.0.14,<0.0.15",
+    "psycopg[binary]>=3.2.0",
+    "uvicorn[standard]>=0.25.0,<0.26",
+    "httpx>=0.28.1,<0.29",
+    "pyalex>=0.16,<0.17",
+    "fastapi[standard]>=0.115.11,<0.116",
+    "rich>=14.1.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.11,<3.12"
+[project.scripts]
+get-openalex = "polus.aithena.jobs.getopenalex.__main__:app"
+get-openalex-s3 = "polus.aithena.jobs.getopenalex.s3.__main__:app"
+get-openalex-api = "polus.aithena.jobs.getopenalex.api.run:main"
 
-boto3 = "^1.35.63"
-polus-aithena-common = {path = "../../common", develop = true}
-tqdm = "^4.67.0"
-[tool.poetry.group.dev.dependencies]
-bump2version = "^1.0.1"
-pre-commit = "^3.8.0"
-pytest = "^8.3.2"
-pytest-sugar = "^1.0.0"
-pytest-xdist = "^3.6.1"
+[dependency-groups]
+dev = [
+    "bump2version>=1.0.1,<2",
+    "pre-commit>=3.8.0,<4",
+    "pytest>=8.3.2,<9",
+    "pytest-sugar>=1.0.0,<2",
+    "pytest-xdist>=3.6.1,<4",
+    "pytest-asyncio>=0.23.5,<0.24",
+]
+
+[tool.uv.sources]
+openalex-types = { git = "https://github.com/camilovelezr/openalex-types.git" }
+
+[tool.hatch.build.targets.sdist]
+include = ["src/polus"]
+
+[tool.hatch.build.targets.wheel]
+include = ["src/polus"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/polus" = "polus"
 
 [build-system]
-build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core"]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 pythonpath = [
   ".",
 ]
-
-[tool.poetry.scripts]
-get-openalex = "polus.aithena.jobs.getopenalex.__main__:app"
+asyncio_mode = "auto"

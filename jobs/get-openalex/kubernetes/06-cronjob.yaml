@@ -1,0 +1,159 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: openalex-daily-update
+  namespace: default
+spec:
+  # Run daily at 2 AM UTC
+  schedule: "0 2 * * *"
+  # Timezone support (requires Kubernetes 1.24+)
+  # timeZone: "America/New_York"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: openalex-updater
+            # Replace with your container registry and image
+            image: openalex/get-openalex:latest
+            imagePullPolicy: Always
+            command: ["get-openalex", "update"]
+            args: 
+            # Uncomment to set specific parameters
+            # - "--max-records"
+            # - "50000"
+            # - "--from-date"
+            # - "2025-01-01"
+            env:
+            # Environment variables from ConfigMap
+            - name: PYALEX_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: openalex-config
+                  key: PYALEX_EMAIL
+            - name: UPDATE_BATCH_SIZE
+              valueFrom:
+                configMapKeyRef:
+                  name: openalex-config
+                  key: UPDATE_BATCH_SIZE
+            - name: UPDATE_MAX_RECORDS
+              valueFrom:
+                configMapKeyRef:
+                  name: openalex-config
+                  key: UPDATE_MAX_RECORDS
+            - name: JOB_DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: openalex-config
+                  key: JOB_DATABASE_URL
+            - name: USE_POSTGRES
+              valueFrom:
+                configMapKeyRef:
+                  name: openalex-config
+                  key: USE_POSTGRES
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: openalex-config
+                  key: LOG_LEVEL
+            # Environment variables from Secret
+            - name: POSTGRES_URL
+              valueFrom:
+                secretKeyRef:
+                  name: openalex-secrets
+                  key: POSTGRES_URL
+                  optional: true
+            - name: OPENALEX_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openalex-secrets
+                  key: OPENALEX_API_KEY
+                  optional: true
+            volumeMounts:
+            - name: data
+              mountPath: /data
+            resources:
+              requests:
+                memory: "2Gi"
+                cpu: "1000m"
+              limits:
+                memory: "4Gi"
+                cpu: "2000m"
+          volumes:
+          - name: data
+            persistentVolumeClaim:
+              claimName: openalex-data-pvc
+  # Keep successful jobs for 7 days
+  successfulJobsHistoryLimit: 7
+  # Keep failed jobs for 30 days for debugging
+  failedJobsHistoryLimit: 30
+---
+# Optional: CronJob for monthly full refresh from S3 snapshots
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: openalex-monthly-snapshot
+  namespace: default
+spec:
+  # Run monthly on the 1st at 3 AM UTC
+  schedule: "0 3 1 * *"
+  # Suspend this job by default (enable when ready)
+  suspend: true
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: openalex-snapshot-updater
+            image: openalex/get-openalex:latest
+            imagePullPolicy: Always
+            command: ["python", "-m", "polus.aithena.jobs.getopenalex.s3"]
+            args: ["--snapshot-type", "works", "--download", "--process"]
+            env:
+            # Same environment variables as above
+            - name: PYALEX_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: openalex-config
+                  key: PYALEX_EMAIL
+            - name: JOB_DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: openalex-config
+                  key: JOB_DATABASE_URL
+            - name: USE_POSTGRES
+              value: "true"  # S3 snapshots should use PostgreSQL
+            - name: POSTGRES_URL
+              valueFrom:
+                secretKeyRef:
+                  name: openalex-secrets
+                  key: POSTGRES_URL
+            - name: OPENALEX_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openalex-secrets
+                  key: OPENALEX_API_KEY
+                  optional: true
+            volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: snapshot-storage
+              mountPath: /snapshots
+            resources:
+              requests:
+                memory: "8Gi"
+                cpu: "2000m"
+              limits:
+                memory: "16Gi"
+                cpu: "4000m"
+          volumes:
+          - name: data
+            persistentVolumeClaim:
+              claimName: openalex-data-pvc
+          - name: snapshot-storage
+            emptyDir:
+              sizeLimit: 100Gi  # Temporary storage for snapshot processing
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5

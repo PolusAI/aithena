@@ -1,0 +1,298 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts-production
+  namespace: box
+data:
+  01-enable-extensions.sql: |
+    -- This script is safe to run on existing databases
+    -- It checks for existence before creating anything
+    
+    -- Enable all required extensions
+    CREATE EXTENSION IF NOT EXISTS vector;           -- For embeddings
+    CREATE EXTENSION IF NOT EXISTS pg_trgm;          -- For fuzzy text search
+    CREATE EXTENSION IF NOT EXISTS pg_stat_statements; -- For query monitoring
+    
+    -- Create OpenAlex schema
+    CREATE SCHEMA IF NOT EXISTS openalex;
+    
+    -- Grant permissions to the application user
+    GRANT ALL ON SCHEMA openalex TO "AithenaAdmin";
+    GRANT USAGE ON SCHEMA openalex TO "AithenaAdmin";
+    ALTER DEFAULT PRIVILEGES IN SCHEMA openalex GRANT ALL ON TABLES TO "AithenaAdmin";
+    ALTER DEFAULT PRIVILEGES IN SCHEMA openalex GRANT ALL ON SEQUENCES TO "AithenaAdmin";
+    
+    -- Grant read-only access to monitoring user (if exists)
+    DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'AithenaMonitoring') THEN
+            GRANT USAGE ON SCHEMA openalex TO "AithenaMonitoring";
+            ALTER DEFAULT PRIVILEGES IN SCHEMA openalex GRANT SELECT ON TABLES TO "AithenaMonitoring";
+            ALTER DEFAULT PRIVILEGES IN SCHEMA openalex GRANT SELECT ON SEQUENCES TO "AithenaMonitoring";
+        END IF;
+    END $$;
+    
+    -- Create and grant read-only access to oauser
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'oauser') THEN
+            CREATE USER oauser WITH PASSWORD 'openalex150';
+        END IF;
+    END $$;
+    
+    -- Grant read-only permissions to oauser
+    GRANT CONNECT ON DATABASE askaithena TO oauser;
+    GRANT USAGE ON SCHEMA openalex TO oauser;
+    GRANT SELECT ON ALL TABLES IN SCHEMA openalex TO oauser;
+    GRANT SELECT ON ALL SEQUENCES IN SCHEMA openalex TO oauser;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA openalex GRANT SELECT ON TABLES TO oauser;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA openalex GRANT SELECT ON SEQUENCES TO oauser;
+    
+    -- Also grant access to monitoring schema for oauser (if exists)
+    DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'monitoring') THEN
+            GRANT USAGE ON SCHEMA monitoring TO oauser;
+            GRANT SELECT ON ALL TABLES IN SCHEMA monitoring TO oauser;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA monitoring GRANT SELECT ON TABLES TO oauser;
+        END IF;
+    END $$;
+    
+    -- Grant execution rights on functions (if they exist)
+    DO $$
+    BEGIN
+        -- Check and grant for optimize_table function
+        IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'optimize_table' AND pronamespace = 'openalex'::regnamespace) THEN
+            GRANT EXECUTE ON FUNCTION openalex.optimize_table(text) TO "AithenaAdmin";
+            IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'AithenaMonitoring') THEN
+                GRANT EXECUTE ON FUNCTION openalex.optimize_table(text) TO "AithenaMonitoring";
+            END IF;
+        END IF;
+        
+        -- Check and grant for create_indexes_parallel function
+        IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'create_indexes_parallel' AND pronamespace = 'openalex'::regnamespace) THEN
+            GRANT EXECUTE ON FUNCTION openalex.create_indexes_parallel(text,text[]) TO "AithenaAdmin";
+            IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'AithenaMonitoring') THEN
+                GRANT EXECUTE ON FUNCTION openalex.create_indexes_parallel(text,text[]) TO "AithenaMonitoring";
+            END IF;
+        END IF;
+    END $$;
+    
+  02-performance-settings.sql: |
+    -- Set performance parameters that require superuser
+    ALTER SYSTEM SET huge_pages = 'try';
+    ALTER SYSTEM SET max_prepared_transactions = 100;
+    
+    -- Create custom operator class for trigram searches (only if pg_trgm is loaded)
+    DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm') THEN
+            -- Only create if it doesn't already exist
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_opclass 
+                WHERE opcname = 'gin_trgm_ops_custom' 
+                AND opcmethod = (SELECT oid FROM pg_am WHERE amname = 'gin')
+            ) THEN
+                CREATE OPERATOR CLASS gin_trgm_ops_custom
+                FOR TYPE text USING gin
+                AS
+                    OPERATOR 1 % (text, text),
+                    FUNCTION 1 btint4cmp(int4, int4),
+                    FUNCTION 2 gin_extract_value_trgm(text, internal),
+                    FUNCTION 3 gin_extract_query_trgm(text, internal, int2, internal, internal),
+                    FUNCTION 4 gin_trgm_consistent(internal, int2, text, int4, internal, internal),
+                    STORAGE int4;
+            END IF;
+        END IF;
+    END $$;
+    
+    -- Reload configuration
+    SELECT pg_reload_conf();
+    
+  03-monitoring-setup.sql: |
+    -- Create monitoring schema
+    CREATE SCHEMA IF NOT EXISTS monitoring;
+    
+    -- Create a view for monitoring table sizes
+    CREATE OR REPLACE VIEW monitoring.table_sizes AS
+    SELECT 
+        schemaname,
+        tablename,
+        pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS total_size,
+        pg_size_pretty(pg_relation_size(schemaname||'.'||tablename)) AS table_size,
+        pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename) - pg_relation_size(schemaname||'.'||tablename)) AS indexes_size,
+        pg_total_relation_size(schemaname||'.'||tablename) AS total_bytes
+    FROM pg_tables
+    WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
+    ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+    
+    -- Create a view for monitoring index usage
+    CREATE OR REPLACE VIEW monitoring.index_usage AS
+    SELECT
+        schemaname,
+        tablename,
+        indexname,
+        idx_scan,
+        idx_tup_read,
+        idx_tup_fetch,
+        pg_size_pretty(pg_relation_size(indexrelid)) AS index_size,
+        CASE 
+            WHEN idx_scan = 0 THEN 'UNUSED'
+            WHEN idx_scan < 100 THEN 'RARELY USED'
+            ELSE 'ACTIVE'
+        END AS usage_status
+    FROM pg_stat_user_indexes
+    ORDER BY idx_scan;
+    
+    -- Create a view for monitoring slow queries
+    CREATE OR REPLACE VIEW monitoring.slow_queries AS
+    SELECT
+        query,
+        calls,
+        round(total_time::numeric, 2) AS total_time_ms,
+        round(mean_time::numeric, 2) AS mean_time_ms,
+        round(stddev_time::numeric, 2) AS stddev_time_ms,
+        rows,
+        round(100.0 * shared_blks_hit / nullif(shared_blks_hit + shared_blks_read, 0), 2) AS cache_hit_pct
+    FROM pg_stat_statements
+    WHERE mean_time > 1000  -- queries averaging over 1 second
+    ORDER BY mean_time DESC
+    LIMIT 100;
+    
+    -- Create a view for current activity
+    CREATE OR REPLACE VIEW monitoring.current_activity AS
+    SELECT
+        pid,
+        usename,
+        application_name,
+        client_addr,
+        backend_start,
+        state,
+        wait_event_type,
+        wait_event,
+        query_start,
+        state_change,
+        query
+    FROM pg_stat_activity
+    WHERE state != 'idle'
+    ORDER BY query_start;
+    
+    -- Create a view for table bloat estimation
+    CREATE OR REPLACE VIEW monitoring.table_bloat AS
+    WITH constants AS (
+        SELECT current_setting('block_size')::numeric AS bs, 23 AS hdr, 8 AS ma
+    ),
+    bloat_info AS (
+        SELECT
+            schemaname,
+            tablename,
+            cc.reltuples,
+            cc.relpages,
+            bs,
+            CEIL((cc.reltuples*((datahdr+ma-
+                (CASE WHEN datahdr%ma=0 THEN ma ELSE datahdr%ma END))+nullhdr2+4))/(bs-20::float)) AS otta
+        FROM (
+            SELECT
+                ns.nspname AS schemaname,
+                tbl.relname AS tablename,
+                tbl.reltuples,
+                tbl.relpages,
+                bs,
+                COALESCE(CEIL((COUNT(att.attname))::numeric/8), 1) AS nullhdr2,
+                23 + COALESCE(SUM(
+                    CASE WHEN att.attlen = -1 THEN 0
+                    ELSE (1+att.attlen)::numeric END
+                ), 0) AS datahdr
+            FROM pg_attribute att
+            JOIN pg_class tbl ON att.attrelid = tbl.oid
+            JOIN pg_namespace ns ON ns.oid = tbl.relnamespace
+            LEFT JOIN pg_stats s ON s.schemaname=ns.nspname
+                AND s.tablename = tbl.relname AND s.inherited=false AND s.attname=att.attname,
+            constants
+            WHERE tbl.relkind='r'
+                AND att.attnum > 0
+                AND NOT att.attisdropped
+                AND ns.nspname NOT IN ('pg_catalog', 'information_schema')
+            GROUP BY 1,2,3,4,5
+        ) AS cc
+    )
+    SELECT
+        schemaname,
+        tablename,
+        reltuples::bigint AS row_estimate,
+        relpages::bigint * bs AS table_bytes,
+        otta::bigint * bs AS expected_bytes,
+        CASE WHEN relpages < otta THEN 0
+            ELSE (relpages::bigint * bs - otta::bigint * bs)::bigint END AS bloat_bytes,
+        CASE WHEN relpages < otta OR relpages = 0 THEN 0
+            ELSE round((relpages::numeric - otta::numeric) * 100 / relpages::numeric, 1) END AS bloat_pct
+    FROM bloat_info
+    ORDER BY bloat_bytes DESC;
+    
+  04-create-utility-functions.sql: |
+    -- Create a function to build indexes in parallel
+    CREATE OR REPLACE FUNCTION openalex.create_indexes_parallel(
+        p_table_name text,
+        p_indexes text[]
+    ) RETURNS void AS $$
+    DECLARE
+        v_index text;
+        v_start_time timestamp;
+        v_end_time timestamp;
+    BEGIN
+        FOREACH v_index IN ARRAY p_indexes
+        LOOP
+            v_start_time := clock_timestamp();
+            
+            EXECUTE v_index;
+            
+            v_end_time := clock_timestamp();
+            RAISE NOTICE 'Index created in %s', v_end_time - v_start_time;
+        END LOOP;
+    END;
+    $$ LANGUAGE plpgsql;
+    
+    -- Create a function to optimize tables after bulk loading
+    CREATE OR REPLACE FUNCTION openalex.optimize_table(p_table_name text) RETURNS void AS $$
+    BEGIN
+        RAISE NOTICE 'Running VACUUM ANALYZE on %', p_table_name;
+        EXECUTE format('VACUUM ANALYZE %I', p_table_name);
+        
+        RAISE NOTICE 'Running REINDEX on %', p_table_name;
+        EXECUTE format('REINDEX TABLE %I', p_table_name);
+        
+        RAISE NOTICE 'Optimization complete for %', p_table_name;
+    END;
+    $$ LANGUAGE plpgsql;
+    
+    -- Function to generate index recommendations
+    CREATE OR REPLACE FUNCTION monitoring.suggest_indexes()
+    RETURNS TABLE(
+        schema_name text,
+        table_name text,
+        column_name text,
+        index_type text,
+        reason text
+    ) AS $$
+    BEGIN
+        -- Find foreign key columns without indexes
+        RETURN QUERY
+        SELECT DISTINCT
+            n.nspname::text,
+            c.relname::text,
+            a.attname::text,
+            'btree'::text,
+            'Foreign key without index'::text
+        FROM pg_constraint con
+        JOIN pg_class c ON c.oid = con.conrelid
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum = ANY(con.conkey)
+        WHERE con.contype = 'f'
+            AND NOT EXISTS (
+                SELECT 1 FROM pg_index i
+                WHERE i.indrelid = c.oid
+                    AND a.attnum = ANY(i.indkey)
+            )
+            AND n.nspname NOT IN ('pg_catalog', 'information_schema');
+    END;
+    $$ LANGUAGE plpgsql;

@@ -1,0 +1,6 @@
+# Helm chart temporary files
+*.tgz
+.DS_Store
+
+# Dependencies
+charts/

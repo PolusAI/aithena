@@ -5,6 +5,8 @@ values.yaml
 
 # secrets (may contain sensitive data)
 **/**-secret.yaml
+**/**secret.yaml
+!**/secret_sample.yaml
 
 # environment file (may contain sensitive data)
 .env
@@ -48,7 +50,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -195,6 +196,7 @@ cython_debug/
 
 # vscode
 .vscode
+*.code-workspace
 
 
 #macOS
@@ -209,3 +211,6 @@ node_modules
 
 # dbs
 *.db
+
+# Avoid committing BFG cleaner
+bfg.jar

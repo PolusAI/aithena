@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rabbitmq-chart.fullname" . }}-plugins
+  labels:
+    {{- include "rabbitmq-chart.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  enabled_plugins: |
+    {{- include "rabbitmq-chart.enabledPlugins" . | nindent 4 }}

@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: vllm-nemotron-pv-0
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /polus2/velezramirezc2/.cache/huggingface
+    type: DirectoryOrCreate
+  storageClassName: manual
+  persistentVolumeReclaimPolicy: Retain

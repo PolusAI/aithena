@@ -1,0 +1,124 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config-loading
+  namespace: box
+data:
+  postgresql.conf: |
+    #------------------------------------------------------------------------------
+    # MEMORY CONFIGURATION (BEAST MODE for 1.2Ti Container)
+    #------------------------------------------------------------------------------
+    shared_buffers = 300GB              # 25% of container RAM
+    effective_cache_size = 1000GB       # 83% of container RAM
+    maintenance_work_mem = 200GB        # For single-pass index builds
+    work_mem = 2GB                      # Keep this per-connection setting
+    wal_buffers = 2047MB                # Max allowed value
+    
+    #------------------------------------------------------------------------------
+    # CPU CONFIGURATION (Optimized for 110 cores)
+    #------------------------------------------------------------------------------
+    max_parallel_workers_per_gather = 32      # Parallel query workers
+    max_parallel_maintenance_workers = 16     # Parallel index/vacuum workers
+    max_worker_processes = 110                # Match available CPU cores
+    parallel_leader_participation = on        # Leader participates in parallel queries
+    
+    #------------------------------------------------------------------------------
+    # CONNECTION SETTINGS
+    #------------------------------------------------------------------------------
+    listen_addresses = '*'                    # Listen on all interfaces for NodePort access
+    max_connections = 3000                    # Support pipeline + vectorizers + admin
+    superuser_reserved_connections = 5        # Reserved for admin tasks
+    
+    #------------------------------------------------------------------------------
+    # CHECKPOINT SETTINGS (BEAST MODE - AVOID CHECKPOINTS)
+    #------------------------------------------------------------------------------
+    checkpoint_timeout = 24h                  # Effectively disable time-based checkpoints
+    checkpoint_completion_target = 0.9        # Spread I/O when a checkpoint does occur
+    max_wal_size = 400GB                      # Absorb massive writes without checkpointing
+    min_wal_size = 50GB                       # Keep a large reserve of WAL files
+    checkpoint_warning = 0                    # Disable warnings, we know what we're doing
+    
+    #------------------------------------------------------------------------------
+    # WRITE PERFORMANCE (OPTIMIZED FOR BULK LOADING)
+    #------------------------------------------------------------------------------
+    synchronous_commit = off                  # Don't wait for WAL writes during load
+    wal_compression = on                      # Save disk I/O
+    wal_log_hints = on                       # For pg_rewind if needed
+    wal_level = minimal                      # Minimal WAL during bulk load
+    max_wal_senders = 0                      # No replication during bulk load
+    archive_mode = off                       # No archiving
+    full_page_writes = off                   # Risk/performance tradeoff for loading
+    fsync = on                               # Keep on for safety
+    
+    #------------------------------------------------------------------------------
+    # QUERY PLANNER
+    #------------------------------------------------------------------------------
+    random_page_cost = 1.1                   # SSD optimized (default is 4.0)
+    cpu_tuple_cost = 0.01                    
+    cpu_index_tuple_cost = 0.005             
+    cpu_operator_cost = 0.0025               
+    effective_io_concurrency = 200           # SSD can handle many concurrent I/Os
+    default_statistics_target = 100          # Lower during load, increase later
+    
+    #------------------------------------------------------------------------------
+    # PARALLEL QUERY TUNING
+    #------------------------------------------------------------------------------
+    parallel_tuple_cost = 0.05               # Encourage parallel plans
+    parallel_setup_cost = 500                # Lower threshold
+    min_parallel_table_scan_size = 1MB       # Parallel for smaller tables
+    min_parallel_index_scan_size = 256kB     # Parallel for smaller indexes
+    
+    #------------------------------------------------------------------------------
+    # LOGGING (Minimal for maximum performance)
+    #------------------------------------------------------------------------------
+    log_destination = 'stderr'
+    logging_collector = on
+    log_directory = 'pg_log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_rotation_age = 1d
+    log_rotation_size = 1GB
+    log_statement = 'none'                   # No statement logging
+    log_duration = off                       # No duration logging
+    log_min_duration_statement = -1          # Disable slow query logging
+    log_checkpoints = on                     # Still want checkpoint info
+    log_connections = off                    
+    log_disconnections = off                 
+    log_lock_waits = off                     # Disable during load
+    log_temp_files = -1                      # Disable temp file logging
+    
+    #------------------------------------------------------------------------------
+    # AUTOVACUUM TUNING (DISABLED FOR BULK LOAD)
+    #------------------------------------------------------------------------------
+    autovacuum = off                         # Disable autovacuum entirely for pure bulk load
+    
+    #------------------------------------------------------------------------------
+    # BACKGROUND WRITER (Less aggressive during bulk load)
+    #------------------------------------------------------------------------------
+    bgwriter_delay = 200ms                   # Less frequent writes
+    bgwriter_lru_maxpages = 100              # Fewer pages per round
+    bgwriter_lru_multiplier = 2.0            # Less aggressive
+    
+    #------------------------------------------------------------------------------
+    # RESOURCE USAGE
+    #------------------------------------------------------------------------------
+    temp_file_limit = 100GB                  
+    vacuum_cost_delay = 10                   # Throttle vacuum during load
+    vacuum_cost_limit = 200                  # Lower vacuum speed
+    
+    #------------------------------------------------------------------------------
+    # LOCK MANAGEMENT
+    #------------------------------------------------------------------------------
+    deadlock_timeout = 1s
+    max_locks_per_transaction = 256          
+    max_pred_locks_per_transaction = 256     
+    
+    #------------------------------------------------------------------------------
+    # VERSION/PLATFORM SPECIFIC
+    #------------------------------------------------------------------------------
+    huge_pages = try                         
+    shared_preload_libraries = 'vector'      # ONLY vector, no pg_stat_statements
+    
+    #------------------------------------------------------------------------------
+    # DEVELOPER OPTIONS
+    #------------------------------------------------------------------------------
+    jit = off                                # Disable JIT during bulk load

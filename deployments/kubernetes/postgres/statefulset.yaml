@@ -1,0 +1,205 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: askaithena-db
+  namespace: box
+spec:
+  serviceName: askaithena-db-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: askaithena-db
+  template:
+    metadata:
+      labels:
+        app: askaithena-db
+    spec:
+      # Anti-affinity to avoid co-location with heavy workloads
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: workload-type
+                  operator: In
+                  values: ["cpu-intensive", "memory-intensive"]
+              topologyKey: kubernetes.io/hostname
+      
+      # Init container to ensure proper permissions
+      initContainers:
+      - name: fix-permissions
+        image: busybox:1.35
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Init container: Checking PGDATA directory..."
+          if [ -z "$(ls -A /var/lib/postgresql/data 2>/dev/null)" ]; then
+            echo "PGDATA is empty, setting permissions..."
+            chown -R 999:999 /var/lib/postgresql/data
+            chmod 700 /var/lib/postgresql/data
+            echo "Permissions set successfully"
+          else
+            echo "WARNING: PGDATA is not empty!"
+            echo "Contents:"
+            ls -la /var/lib/postgresql/data
+            echo ""
+            echo "This may prevent PostgreSQL from initializing properly."
+            echo "Consider running the cleanup pod first."
+          fi
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        securityContext:
+          runAsUser: 0  # Root needed to change ownership
+      
+      containers:
+      - name: postgres
+        image: pgvector/pgvector:pg17
+        ports:
+        - containerPort: 5432
+          name: postgres
+        
+        # Resource allocation
+        resources:
+          limits:
+            cpu: "90"
+            memory: "1200Gi"
+          requests:
+            cpu: "10"
+            memory: "200Gi"
+        
+        # Environment variables
+        env:
+        - name: POSTGRES_DB
+          value: "askaithena"
+        - name: POSTGRES_USER
+          value: "AithenaAdmin"
+        - name: POSTGRES_PASSWORD
+          value: "polus2has8"
+        - name: PGDATA
+          value: /var/lib/postgresql/data
+        - name: POSTGRES_INITDB_ARGS
+          value: "--encoding=UTF8 --locale=en_US.utf8 --data-checksums"
+        
+        # Mount points
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        - name: postgres-config
+          mountPath: /etc/postgresql-common/postgresql.conf
+          subPath: postgresql.conf
+        - name: init-scripts
+          mountPath: /docker-entrypoint-initdb.d
+        - name: shared-memory
+          mountPath: /dev/shm
+        - name: backup-storage
+          mountPath: /backups
+        
+        # Health checks
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -d askaithena -U $POSTGRES_USER
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -d askaithena -U $POSTGRES_USER
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+        
+        # Startup probe for long initialization
+        startupProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -d askaithena -U $POSTGRES_USER
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30  # 5 minutes to start
+        
+        # Pass custom config as arguments (allows entrypoint to handle initialization)
+        args:
+        - -c
+        - config_file=/etc/postgresql-common/postgresql.conf
+        
+        # Security context for container
+        securityContext:
+          runAsUser: 999
+          runAsGroup: 999
+        
+        # Lifecycle hook to run init scripts on every start
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - |
+                # Wait for PostgreSQL to be fully ready
+                until pg_isready -U $POSTGRES_USER -d $POSTGRES_DB; do
+                  echo "Waiting for PostgreSQL to be ready..."
+                  sleep 2
+                done
+                
+                # Additional safety wait
+                sleep 5
+                
+                # Run init scripts (they're already idempotent with IF NOT EXISTS checks)
+                echo "Running production initialization scripts..."
+                
+                for script in /docker-entrypoint-initdb.d/*.sql; do
+                  if [ -f "$script" ]; then
+                    echo "Executing $script"
+                    psql -U $POSTGRES_USER -d $POSTGRES_DB -f "$script" || echo "Warning: $script had errors (may be normal for idempotent scripts)"
+                  fi
+                done
+                
+                echo "Production initialization complete"
+      
+      # Pod-level security context
+      securityContext:
+        fsGroup: 999
+      
+      # Volumes
+      volumes:
+      - name: postgres-config
+        configMap:
+          name: postgres-config-production
+      - name: init-scripts
+        configMap:
+          name: postgres-init-scripts-production
+          defaultMode: 0755
+      - name: shared-memory
+        emptyDir:
+          medium: Memory
+          sizeLimit: 256Gi
+      - name: backup-storage
+        hostPath:
+          path: /polus2/velezramirezc2/backups
+          type: DirectoryOrCreate
+  
+  # VolumeClaimTemplate for persistent storage
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: truly-manual
+      resources:
+        requests:
+          storage: 10Ti

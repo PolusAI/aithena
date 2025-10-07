@@ -1,0 +1,17 @@
+{{- if and .Values.persistence.enabled .Values.persistence.pv.create -}}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.persistence.pv.name }}
+spec:
+  capacity:
+    storage: {{ .Values.persistence.pv.storage }}
+  accessModes:
+    {{- toYaml .Values.persistence.pv.accessModes | nindent 4 }}
+  hostPath:
+    path: {{ .Values.persistence.pv.hostPath.path }}
+    type: {{ .Values.persistence.pv.hostPath.type }}
+  storageClassName: {{ .Values.persistence.storageClassName }}
+  persistentVolumeReclaimPolicy: {{ .Values.persistence.pv.reclaimPolicy }}
+{{- end }}

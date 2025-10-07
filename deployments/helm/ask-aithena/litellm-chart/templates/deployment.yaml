@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-{{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "litellm-chart.simpleSelectorLabels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "litellm-chart.simpleSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "litellm-chart.simpleSelectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "litellm-chart.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 4000
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://{{ .Values.global.litellm.db.user }}:{{ .Values.global.litellm.db.password }}@{{ include "ask-aithena-chart.serviceName" (dict "Chart" (dict "Name" "litellm-db-chart") "Release" .Release) }}:5432/{{ .Values.global.litellm.db.name }}"
+            - name: STORE_MODEL_IN_DB
+              value: "True"
+            - name: OLLAMA_HOST
+              value: "http://{{ include "ask-aithena-chart.serviceName" (dict "Chart" (dict "Name" "ollama-chart") "Release" .Release) }}-service:11434"
+            - name: AZURE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.secret.existingSecret }}{{ .Values.secret.existingSecret }}{{ else }}{{ include "litellm-chart.fullname" . }}-secret{{ end }}
+                  key: AZURE_API_KEY
+            - name: AZURE_API_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ if .Values.secret.existingSecret }}{{ .Values.secret.existingSecret }}{{ else }}{{ include "litellm-chart.fullname" . }}-secret{{ end }}
+                  key: AZURE_API_BASE
+            {{- if .Values.vertex.enabled }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /app/vertex_credentials.json
+            {{- end }}
+          args:
+            - "--port=4000"
+            - "--config=/app/config.yaml"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+            {{- if .Values.vertex.enabled }}
+            - name: vertex-credentials-volume
+              mountPath: /app/vertex_credentials.json
+              subPath: vertex_credentials.json
+            {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /health/readiness
+              port: 4000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/liveness
+              port: 4000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "litellm-chart.fullname" . }}-config
+        {{- if .Values.vertex.enabled }}
+        - name: vertex-credentials-volume
+          configMap:
+            name: {{ include "litellm-chart.fullname" . }}-vertex-credentials
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

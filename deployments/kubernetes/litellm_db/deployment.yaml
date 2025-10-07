@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litellm-db
+  namespace: box
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: litellm-db
+  template:
+    metadata:
+      labels:
+        app: litellm-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:latest
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: "litellm"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: litellm-db-secret
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: litellm-db-secret
+              key: password
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - "-d"
+            - "litellm"
+            - "-U"
+            - "$(POSTGRES_USER)"
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - "-d"
+            - "litellm"
+            - "-U"
+            - "$(POSTGRES_USER)"
+          initialDelaySeconds: 15
+          periodSeconds: 20
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: litellm-db-pvc 

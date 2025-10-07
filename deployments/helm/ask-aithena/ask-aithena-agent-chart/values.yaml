@@ -1,0 +1,194 @@
+# Default values for ask-aithena-agent-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Replica count for the deployment
+replicaCount: 1
+
+# Image configuration
+image:
+  repository: camilovelezr/ask-aithena-agent
+  tag: "1.1.3" # >=1.1.3
+  pullPolicy: Always
+
+# Namespace configuration (optional - can be overridden by parent chart)
+namespace: ""
+
+# Service configuration
+service:
+  type: NodePort
+  port: 8000
+  targetPort: 8000
+  nodePort: 32105
+  name: http
+
+# Storage configuration
+persistence:
+  enabled: true
+  storageClassName: standard
+  accessMode: ReadOnlyMany
+  size: 0.5Gi
+  hostPath: "/polus2/velezramirezc2/.data/prompts"
+  mountPath: /opt/prompts
+
+# Secret configuration
+secret:
+  # If existingSecret is set, it will use an existing secret instead of creating a new one
+  existingSecret: ""
+  # The key name in the secret that contains the LiteLLM API key
+  litellmApiKeyName: litellm_api_key
+  # If not using existing secret, provide the API key here (base64 encoded for production)
+  litellmApiKey: "sk-C"  # Default placeholder value
+
+# Environment variables configuration
+env:
+  # LiteLLM configuration
+  litellm:
+    url: "http://litellm-service:4000/v1"
+  
+  # Logfire configuration
+  logfire:
+    useLogfire: "false"
+
+  # Model configurations
+  models:
+    responder:
+      model: "gpt-4.1"
+      temperature: "0.5"
+    talker:
+      model: "gpt-4.1"
+      temperature: "0.85"
+    semantics:
+      model: "gpt-4.1"
+      temperature: "0.4"
+    aegisOrchestrator:
+      model: "gpt-4.1"
+      temperature: "0.8"
+    aegisReferee:
+      model: "gpt-4.1"
+      temperature: "1"
+    shield:
+      model: "gpt-4.1"
+      temperature: "0.78"
+  
+  # Database configuration
+  database:
+    embeddingTable: "openalex.abstract_embeddings_arctic"
+  
+  # Prompts configuration
+  prompts:
+    directory: "/opt/prompts"
+  
+  # RabbitMQ configuration
+  rabbitmq:
+    url: "amqp://guest:guest@rabbitmq-service:5672/"
+  
+  # Arctic service configuration
+  arctic:
+    port: "8000"
+  
+  # HTTP configuration
+  http:
+    timeout: "60"
+
+# Health check probes
+probes:
+  readiness:
+    enabled: true
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 15
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+  
+  liveness:
+    enabled: true
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+
+# Resource limits and requests
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 1000m
+  #   memory: 1Gi
+  # requests:
+  #   cpu: 500m
+  #   memory: 512Mi
+
+# Node selector for pod assignment
+nodeSelector: {}
+
+# Tolerations for pod assignment
+tolerations: []
+
+# Affinity for pod assignment
+affinity: {}
+
+# Pod annotations
+podAnnotations: {}
+
+# Pod security context
+podSecurityContext: {}
+  # fsGroup: 2000
+
+# Container security context
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# Labels to add to all resources
+commonLabels: {}
+
+# Annotations to add to all resources
+commonAnnotations: {}
+
+# Service account configuration (if needed in future)
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# Autoscaling configuration (optional)
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Additional environment variables (key-value pairs)
+extraEnvVars: []
+# - name: EXTRA_VAR
+#   value: "extra_value"
+
+# Additional volume mounts
+extraVolumeMounts: []
+# - name: extra-volume
+#   mountPath: /extra-path
+
+# Additional volumes
+extraVolumes: []
+# - name: extra-volume
+#   configMap:
+#     name: extra-configmap

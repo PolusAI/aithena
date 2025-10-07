@@ -1,0 +1,23 @@
+{{- if and .Values.persistence.enabled .Values.persistence.pv.create -}}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.persistence.pv.name }}
+spec:
+  capacity:
+    storage: {{ .Values.persistence.size }}
+  accessModes:
+    {{- toYaml .Values.persistence.accessModes | nindent 4 }}
+  hostPath:
+    path: {{ .Values.persistence.hostPath }}
+  storageClassName: {{ .Values.persistence.storageClassName }}
+  persistentVolumeReclaimPolicy: {{ .Values.persistence.pv.reclaimPolicy }}
+  claimRef:
+    name: postgres-storage-{{ include "postgres-chart.fullname" . }}-0
+    namespace: {{ .Release.Namespace }}
+  {{- with .Values.persistence.nodeAffinity }}
+  nodeAffinity:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,145 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config-production
+  namespace: box
+data:
+  postgresql.conf: |
+    #------------------------------------------------------------------------------
+    # MEMORY CONFIGURATION (Optimized for 500Gi container limit)
+    #------------------------------------------------------------------------------
+    shared_buffers = 125GB              # 25% of container RAM
+    effective_cache_size = 400GB        # 80% of container RAM
+    maintenance_work_mem = 100GB        # For fast index creation
+    work_mem = 4GB                      # Per operation (be careful with connections)
+    wal_buffers = 1GB                   # Large WAL buffer for write performance
+    
+    #------------------------------------------------------------------------------
+    # CPU CONFIGURATION (Optimized for 110 cores)
+    #------------------------------------------------------------------------------
+    max_parallel_workers_per_gather = 32      # Parallel query workers
+    max_parallel_maintenance_workers = 16     # Parallel index/vacuum workers
+    max_worker_processes = 64                 # Total background workers
+    parallel_leader_participation = on        # Leader participates in parallel queries
+    
+    #------------------------------------------------------------------------------
+    # CONNECTION SETTINGS
+    #------------------------------------------------------------------------------
+    listen_addresses = '*'                    # Listen on all interfaces for NodePort access
+    max_connections = 200                     # Reasonable for dedicated DB server
+    superuser_reserved_connections = 5        # Reserved for admin tasks
+    
+    #------------------------------------------------------------------------------
+    # CHECKPOINT SETTINGS (Optimized for production)
+    #------------------------------------------------------------------------------
+    checkpoint_timeout = 30min                # Regular checkpoints
+    checkpoint_completion_target = 0.9        # Spread checkpoint I/O
+    max_wal_size = 50GB                      # Large WAL for busy periods
+    min_wal_size = 10GB                      # Keep WAL around
+    checkpoint_warning = 300s                 # Warn if checkpoints are too frequent
+    
+    #------------------------------------------------------------------------------
+    # WRITE PERFORMANCE (Production settings)
+    #------------------------------------------------------------------------------
+    synchronous_commit = on                   # Safety for production
+    wal_compression = on                      # Save disk I/O
+    wal_log_hints = on                       # For pg_rewind if needed
+    wal_level = replica                      # Enable replication features
+    archive_mode = off                       # No archiving for now
+    full_page_writes = on                    # Data safety
+    
+    #------------------------------------------------------------------------------
+    # QUERY PLANNER
+    #------------------------------------------------------------------------------
+    random_page_cost = 1.1                   # SSD optimized
+    cpu_tuple_cost = 0.01                    
+    cpu_index_tuple_cost = 0.005             
+    cpu_operator_cost = 0.0025               
+    effective_io_concurrency = 200           # SSD can handle many concurrent I/Os
+    default_statistics_target = 500          # More accurate statistics
+    
+    #------------------------------------------------------------------------------
+    # PARALLEL QUERY TUNING
+    #------------------------------------------------------------------------------
+    parallel_tuple_cost = 0.05               # Encourage parallel plans
+    parallel_setup_cost = 500                # Lower threshold
+    min_parallel_table_scan_size = 1MB       # Parallel for smaller tables
+    min_parallel_index_scan_size = 256kB     # Parallel for smaller indexes
+    
+    #------------------------------------------------------------------------------
+    # LOGGING (Production monitoring)
+    #------------------------------------------------------------------------------
+    log_destination = 'stderr'
+    logging_collector = on
+    log_directory = 'pg_log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_rotation_age = 1d
+    log_rotation_size = 1GB
+    log_statement = 'none'                   # Don't log all statements
+    log_duration = off                       # Don't log all durations
+    log_min_duration_statement = 1000        # Log slow queries (>1s)
+    log_checkpoints = on                     # Monitor checkpoint performance
+    log_connections = off                    # Don't log all connections
+    log_disconnections = off                 # Don't log all disconnections
+    log_lock_waits = on                      # Log lock waits
+    log_temp_files = 10MB                    # Log large temp files
+    
+    #------------------------------------------------------------------------------
+    # AUTOVACUUM TUNING (TEMPORARILY DISABLED for manual control)
+    #------------------------------------------------------------------------------
+    autovacuum = off                         # TEMPORARILY OFF - will re-enable after manual VACUUM
+    autovacuum_max_workers = 8               # More vacuum workers
+    autovacuum_naptime = 10s                 # Check more frequently
+    autovacuum_vacuum_scale_factor = 0.05    # Vacuum at 5% dead tuples
+    autovacuum_analyze_scale_factor = 0.02   # Analyze at 2% changes
+    autovacuum_vacuum_cost_delay = 2ms       # Faster vacuum
+    autovacuum_vacuum_cost_limit = 10000     # Higher throughput
+    
+    #------------------------------------------------------------------------------
+    # BACKGROUND WRITER
+    #------------------------------------------------------------------------------
+    bgwriter_delay = 50ms                    # More aggressive writing
+    bgwriter_lru_maxpages = 1000             # Write more pages per round
+    bgwriter_lru_multiplier = 10.0           # Aggressive background writing
+    
+    #------------------------------------------------------------------------------
+    # RESOURCE USAGE
+    #------------------------------------------------------------------------------
+    temp_file_limit = 100GB                  # Limit temp file usage
+    vacuum_cost_delay = 0                    # No vacuum throttling
+    vacuum_cost_limit = 10000                # Maximum vacuum speed
+    
+    #------------------------------------------------------------------------------
+    # LOCK MANAGEMENT
+    #------------------------------------------------------------------------------
+    deadlock_timeout = 1s
+    max_locks_per_transaction = 256          # Increased for complex queries
+    max_pred_locks_per_transaction = 256     # For serializable isolation
+    
+    #------------------------------------------------------------------------------
+    # VERSION/PLATFORM SPECIFIC
+    #------------------------------------------------------------------------------
+    huge_pages = try                         # Use huge pages if available
+    shared_preload_libraries = 'pg_stat_statements,vector'  # WITH monitoring
+    
+    #------------------------------------------------------------------------------
+    # DEVELOPER OPTIONS (Production settings)
+    #------------------------------------------------------------------------------
+    jit = on                                 # Enable JIT compilation
+    jit_above_cost = 100000                  # JIT for expensive queries
+    jit_inline_above_cost = 500000           # Inline for very expensive
+    jit_optimize_above_cost = 500000         # Optimize for very expensive
+
+    #------------------------------------------------------------------------------
+    # PGVECTOR/HNSW CONFIGURATION
+    #------------------------------------------------------------------------------
+    hnsw.ef_search = 200                     # Higher value for better recall
+
+    
+    #------------------------------------------------------------------------------
+    # PG_STAT_STATEMENTS CONFIGURATION
+    #------------------------------------------------------------------------------
+    pg_stat_statements.max = 10000           # Track more queries
+    pg_stat_statements.track = all           # Track all statements
+    pg_stat_statements.track_utility = on    # Track DDL/utility commands
+    pg_stat_statements.save = on             # Save stats across restarts

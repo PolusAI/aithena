@@ -1,0 +1,13 @@
+{{- if .Values.postgresql.initdb.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "postgres-chart.fullname" . }}-initdb
+  labels:
+    {{- include "postgres-chart.labels" . | nindent 4 }}
+data:
+{{- range $key, $val := .Values.postgresql.initdb.scripts }}
+  {{ $key }}: |
+    {{- $val | nindent 4 }}
+{{- end }}
+{{- end }}

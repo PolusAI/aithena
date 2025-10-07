@@ -1,0 +1,34 @@
+# Helm package files
+*.tgz
+
+# Values files with sensitive data
+*-secret.yaml
+*-secrets.yaml
+values-*.yaml
+!values.yaml
+
+# Local override files
+values.local.yaml
+values.override.yaml
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Helm debug files
+*.lock

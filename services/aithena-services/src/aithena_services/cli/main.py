@@ -4,14 +4,16 @@ import argparse
 import importlib.metadata
 import os
 import sys
+import logging
 import uvicorn
 from typing import List, Optional
 from pathlib import Path
 
 from dotenv import load_dotenv, find_dotenv
-from polus.aithena.common.logger import get_logger
+from aithena_services.config import AITHENA_LOG_LEVEL
 
-logger = get_logger("aithena_services.cli")
+logger = logging.getLogger(__name__)
+logger.setLevel(AITHENA_LOG_LEVEL)
 
 
 def get_version() -> str:

@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "postgres-chart.fullname" . }}-config
+  labels:
+    {{- include "postgres-chart.labels" . | nindent 4 }}
+data:
+  postgresql.conf: |
+    shared_buffers = {{ .Values.postgresql.config.shared_buffers }}
+    effective_cache_size = {{ .Values.postgresql.config.effective_cache_size }}
+    maintenance_work_mem = {{ .Values.postgresql.config.maintenance_work_mem }}
+    work_mem = {{ .Values.postgresql.config.work_mem }}
+    wal_buffers = {{ .Values.postgresql.config.wal_buffers }}
+    max_parallel_workers_per_gather = {{ .Values.postgresql.config.max_parallel_workers_per_gather }}
+    max_parallel_maintenance_workers = {{ .Values.postgresql.config.max_parallel_maintenance_workers }}
+    max_worker_processes = {{ .Values.postgresql.config.max_worker_processes }}
+    max_connections = {{ .Values.postgresql.config.max_connections }}
+    checkpoint_timeout = {{ .Values.postgresql.config.checkpoint_timeout }}
+    max_wal_size = {{ .Values.postgresql.config.max_wal_size }}
+    min_wal_size = {{ .Values.postgresql.config.min_wal_size }}
+    random_page_cost = {{ .Values.postgresql.config.random_page_cost }}
+    effective_io_concurrency = {{ .Values.postgresql.config.effective_io_concurrency }}
+    default_statistics_target = {{ .Values.postgresql.config.default_statistics_target }}
+    log_min_duration_statement = {{ .Values.postgresql.config.log_min_duration_statement }}
+    autovacuum = {{ .Values.postgresql.config.autovacuum }}
+    shared_preload_libraries = '{{ .Values.postgresql.config.shared_preload_libraries }}'
+    hnsw.ef_search = {{ .Values.postgresql.config.hnsw.ef_search }}
+    listen_addresses = '*'

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: litellm-config-pv
+spec:
+  capacity:
+    storage: 0.25Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: standard
+  hostPath:
+    path: "/polus2/velezramirezc2/.data/litellm_config"
+    type: DirectoryOrCreate

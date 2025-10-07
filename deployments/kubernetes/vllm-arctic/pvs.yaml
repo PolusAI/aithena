@@ -1,0 +1,90 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: arctic-direct-0
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /polus2/velezramirezc2/.cache/huggingface
+    type: DirectoryOrCreate
+  storageClassName: manual
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: arctic-direct-1
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /polus2/velezramirezc2/.cache/huggingface
+    type: DirectoryOrCreate
+  storageClassName: manual
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: arctic-direct-2
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /polus2/velezramirezc2/.cache/huggingface
+    type: DirectoryOrCreate
+  storageClassName: manual
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: arctic-direct-3
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /polus2/velezramirezc2/.cache/huggingface
+    type: DirectoryOrCreate
+  storageClassName: manual
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: arctic-direct-4
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /polus2/velezramirezc2/.cache/huggingface
+    type: DirectoryOrCreate
+  storageClassName: manual
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: arctic-direct-5
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /polus2/velezramirezc2/.cache/huggingface
+    type: DirectoryOrCreate
+  storageClassName: manual
+  persistentVolumeReclaimPolicy: Retain

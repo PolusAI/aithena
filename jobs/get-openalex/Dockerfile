@@ -1,26 +1,25 @@
-FROM python:3.11-slim
+FROM ghcr.io/astral-sh/uv:python3.11-bookworm
 
-# Work directory defined in the base container
 ENV EXEC_DIR="/opt/executables"
+
 WORKDIR ${EXEC_DIR}
 
-# TOOL_DIR Argument to the Dockerfile
-ARG TOOL_DIR="."
+# Set environment variables to avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Copy the repository into the container
-RUN mkdir aithena
-COPY $TOOL_DIR ${EXEC_DIR}/aithena/${TOOL_DIR}
-
-# Tool dependencies
-
-## --- BEGIN: Copy project dependencies  ---
+COPY jobs/get-openalex ${EXEC_DIR}/aithena/jobs/get-openalex
 COPY common ${EXEC_DIR}/aithena/common
-## --- END: Copy project dependencies ---
 
-# Install the tool
-RUN pip3 install "${EXEC_DIR}/aithena/${TOOL_DIR}"
+# Create data directory for SQLite
+RUN mkdir -p ${EXEC_DIR}/data ${EXEC_DIR}/logs
+# Install CA certificates
+RUN apt-get update && apt-get install -y ca-certificates && update-ca-certificates
 
-## --- BEGIN: configure the container ---
-ENV AITHENA_LOG_LEVEL="DEBUG"
-ENTRYPOINT ["get-openalex"]
-## --- END: configure the container ---
+# Expose API port
+EXPOSE 8000
+
+WORKDIR ${EXEC_DIR}/aithena/jobs/get-openalex
+RUN uv sync
+
+# Run API
+CMD ["uv", "run", "src/polus/aithena/jobs/getopenalex/api/run.py"]

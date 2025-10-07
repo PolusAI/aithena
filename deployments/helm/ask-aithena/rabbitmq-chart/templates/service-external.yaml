@@ -1,0 +1,24 @@
+{{- if .Values.service.external.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rabbitmq-chart.fullname" . }}-external
+  labels:
+    {{- include "rabbitmq-chart.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.external.type }}
+  ports:
+    - port: {{ .Values.service.external.port }}
+      targetPort: {{ .Values.service.external.targetPort }}
+      {{- if and (eq .Values.service.external.type "NodePort") .Values.service.external.nodePort }}
+      nodePort: {{ .Values.service.external.nodePort }}
+      {{- end }}
+      protocol: TCP
+      name: stomp-external
+  selector:
+    {{- include "rabbitmq-chart.selectorLabels" . | nindent 4 }}
+{{- end }}

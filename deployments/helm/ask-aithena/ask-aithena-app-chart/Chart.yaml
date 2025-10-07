@@ -1,0 +1,16 @@
+apiVersion: v2
+name: ask-aithena-app-chart
+description: A Helm chart for deploying the Ask Aithena application
+type: application
+version: 0.1.0
+appVersion: "1.1.4"
+keywords:
+  - ask-aithena
+  - application
+  - frontend
+home: https://github.com/camilovelezr/aithena
+sources:
+  - https://github.com/camilovelezr/aithena/tree/main/apps/ask-aithena-app
+maintainers:
+  - name: camilovelezr
+    email: ""

@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ollama
+  namespace: box
+spec:
+  replicas: 6
+  serviceName: ollama-headless
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      containers:
+      - name: ollama
+        image: ollama/ollama:0.9.5
+        ports:
+        - containerPort: 11434
+          name: http
+        volumeMounts:
+        - name: ollama-models-volume
+          mountPath: /root/.ollama
+        resources:
+          requests:
+            nvidia.com/gpu: 1
+            memory: "2Gi"
+            cpu: "12"
+          limits:
+            nvidia.com/gpu: 1
+            memory: "4Gi"
+            cpu: "14"
+        env:
+        - name: OLLAMA_HOST
+          value: "0.0.0.0:11434"
+        - name: OLLAMA_DEBUG
+          value: "1"
+        - name: OLLAMA_FLASH_ATTENTION
+          value: "1"
+        - name: OLLAMA_NUM_PARALLEL
+          value: "10"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        readinessProbe:
+          httpGet:
+            path: /api/tags
+            port: 11434
+          initialDelaySeconds: 10
+          periodSeconds: 15
+          timeoutSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/tags
+            port: 11434
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+      volumes:
+      - name: ollama-models-volume
+        persistentVolumeClaim:
+          claimName: ollama-models-pvc

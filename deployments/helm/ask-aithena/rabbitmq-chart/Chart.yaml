@@ -1,0 +1,33 @@
+apiVersion: v2
+name: rabbitmq-chart
+description: A Helm chart for RabbitMQ message broker with management and web STOMP plugins
+
+# A chart can be either an 'application' or a 'library' chart.
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+# Versions are expected to follow Semantic Versioning (https://semver.org/)
+version: 0.1.0
+
+# This is the version number of the application being deployed. This version number should be
+# incremented each time you make changes to the application.
+appVersion: "4.1.2"
+
+keywords:
+  - rabbitmq
+  - message-broker
+  - amqp
+  - stomp
+  - messaging
+
+maintainers:
+  - name: AI Thena Team
+    email: aithena@example.com
+
+home: https://www.rabbitmq.com/
+sources:
+  - https://github.com/camilovelezr/aithena
+  - https://hub.docker.com/_/rabbitmq
+
+icon: https://www.rabbitmq.com/img/rabbitmq-logo.svg

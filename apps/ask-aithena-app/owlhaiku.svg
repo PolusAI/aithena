@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+ <path fill="#2C3E50" d="M100 50c-35.346 0-64 28.654-64 64 0 35.346 28.654 64 64 64s64-28.654 64-64c0-35.346-28.654-64-64-64z"/>
+ 
+ <!-- Owl Face Shape -->
+ <path fill="#34495E" d="M100 60c-29.823 0-54 24.177-54 54 0 29.823 24.177 54 54 54s54-24.177 54-54c0-29.823-24.177-54-54-54z"/>
+ 
+ <!-- Eyes -->
+ <circle cx="80" cy="100" r="12" fill="#ECF0F1"/>
+ <circle cx="120" cy="100" r="12" fill="#ECF0F1"/>
+ <circle cx="80" cy="100" r="6" fill="#2C3E50"/>
+ <circle cx="120" cy="100" r="6" fill="#2C3E50"/>
+ 
+ <!-- Beak -->
+ <path fill="#F39C12" d="M100 130 L90 115 L110 115 Z"/>
+ 
+ <!-- Ear Tufts -->
+ <path fill="#2C3E50" d="M65 75 L50 60 L75 65 Z"/>
+ <path fill="#2C3E50" d="M135 75 L150 60 L125 65 Z"/>
+</svg>

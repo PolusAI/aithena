@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openalex-config
+  namespace: default
+data:
+  # OpenAlex API Configuration
+  OPENALEX_API_KEY: ""  # Optional: Add your OpenAlex API key for higher rate limits
+  PYALEX_EMAIL: "your-email@example.com"  # Required: Your email for OpenAlex API
+  
+  # Update Configuration
+  UPDATE_BATCH_SIZE: "100"
+  UPDATE_MAX_RECORDS: "10000"  # Default max records per update job
+  
+  # API Server Configuration
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  
+  # Job Database Configuration (SQLite)
+  JOB_DATABASE_URL: "sqlite:///data/openalex_jobs.db"
+  
+  # Feature Flags
+  USE_POSTGRES: "false"  # Set to "true" if you have PostgreSQL for OpenAlex data
+  
+  # Logging
+  LOG_LEVEL: "INFO"

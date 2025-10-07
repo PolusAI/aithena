@@ -1,0 +1,171 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-backup-full
+  namespace: box
+spec:
+  template:
+    metadata:
+      labels:
+        app: postgres-backup
+    spec:
+      restartPolicy: OnFailure
+      
+      # Same node affinity as the postgres pod
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - polus2
+      
+      containers:
+      - name: backup
+        image: pgvector/pgvector:pg17
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+          
+          # Get current date
+          TODAY=$(date +%Y%m%d)
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          
+          echo "Starting PostgreSQL backup job at $(date)"
+          
+          # Install pigz for fast compression
+          echo "Installing pigz..."
+          apt-get update -qq && apt-get install -y -qq pigz
+          
+          # Create backup directories
+          echo "Creating backup directories..."
+          mkdir -p /backups/postgresql/${TODAY}/full
+          mkdir -p /backups/postgresql/${TODAY}/logs
+          chmod -R 777 /backups/postgresql
+          
+          # Choose backup method based on environment variable
+          BACKUP_METHOD="${BACKUP_METHOD:-pg_dumpall}"
+          
+          if [ "$BACKUP_METHOD" = "pg_basebackup" ]; then
+              echo "Using pg_basebackup for physical backup..."
+              
+              # Create a temporary directory for basebackup
+              TEMP_DIR="/tmp/basebackup_${TIMESTAMP}"
+              mkdir -p "$TEMP_DIR"
+              
+              # Run pg_basebackup
+              pg_basebackup -h $PGHOST -p $PGPORT -U $PGUSER \
+                -D "$TEMP_DIR" \
+                -Ft \
+                -v \
+                -P \
+                -R 2>&1 | tee /backups/postgresql/${TODAY}/logs/pg_basebackup_${TIMESTAMP}.log
+              
+              # Compress with pigz
+              echo "Compressing backup with pigz..."
+              cd "$TEMP_DIR"
+              tar cf - * | pigz -p 32 > /backups/postgresql/${TODAY}/full/basebackup_${TODAY}.tar.gz
+              
+              # Cleanup
+              rm -rf "$TEMP_DIR"
+              
+              BACKUP_FILE="/backups/postgresql/${TODAY}/full/basebackup_${TODAY}.tar.gz"
+          else
+              echo "Using pg_dumpall for logical backup..."
+              
+              # Run pg_dumpall with pigz compression
+              pg_dumpall -U $PGUSER --verbose --no-password 2>&1 | \
+                tee >(grep -E "^(pg_dump|CREATE|ALTER|GRANT|COPY)" > /backups/postgresql/${TODAY}/logs/pg_dumpall_${TIMESTAMP}.log) | \
+                pigz -p 32 > /backups/postgresql/${TODAY}/full/cluster_backup_${TODAY}.sql.gz
+              
+              BACKUP_FILE="/backups/postgresql/${TODAY}/full/cluster_backup_${TODAY}.sql.gz"
+          fi
+          
+          # Check if backup was created
+          if [ -f "$BACKUP_FILE" ]; then
+              # Get file size
+              BACKUP_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
+              echo "Backup completed successfully!"
+              echo "Backup size: $BACKUP_SIZE"
+              
+              # Calculate checksum
+              echo "Calculating checksum..."
+              CHECKSUM=$(sha256sum "$BACKUP_FILE" | cut -d' ' -f1)
+              
+              # Create metadata file
+              cat > "${BACKUP_FILE%.gz}.metadata.json" << EOF
+          {
+            "backup_type": "$BACKUP_METHOD",
+            "date": "$(date -Iseconds)",
+            "size": "$BACKUP_SIZE",
+            "checksum": "$CHECKSUM",
+            "postgres_version": "17",
+            "compression": "pigz-32",
+            "file": "$(basename $BACKUP_FILE)"
+          }
+          EOF
+              
+              echo "Backup metadata saved"
+              echo "Checksum: $CHECKSUM"
+              echo "Backup file: $BACKUP_FILE"
+          else
+              echo "ERROR: Backup file was not created!"
+              exit 1
+          fi
+          
+          echo "Backup job completed at $(date)"
+        
+        env:
+        # You can override this to use pg_basebackup instead
+        - name: BACKUP_METHOD
+          value: "pg_dumpall"  # or "pg_basebackup"
+        - name: PGHOST
+          value: "askaithena-db-headless"
+        - name: PGPORT
+          value: "5432"
+        - name: PGDATABASE
+          value: "askaithena"
+        - name: PGUSER
+          value: "AithenaAdmin"
+        - name: PGPASSWORD
+          value: "polus2has8"
+        
+        # Run as root to avoid permission issues
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+        
+        # Resource allocation
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "32"
+            memory: "64Gi"
+        
+        # Mount the same volumes as postgres pod
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        - name: backup-storage
+          mountPath: /backups
+        - name: shared-memory
+          mountPath: /dev/shm
+      
+      # Same volumes as postgres pod
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-storage-askaithena-db-0
+      - name: backup-storage
+        hostPath:
+          path: /polus2/velezramirezc2/backups
+          type: DirectoryOrCreate
+      - name: shared-memory
+        emptyDir:
+          medium: Memory
+          sizeLimit: 50Gi

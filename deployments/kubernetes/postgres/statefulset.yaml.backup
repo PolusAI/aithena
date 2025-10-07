@@ -1,0 +1,142 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: askaithena-db
+  namespace: box
+spec:
+  serviceName: askaithena-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: askaithena-db
+  template:
+    metadata:
+      labels:
+        app: askaithena-db
+    spec:
+      # Anti-affinity to avoid co-location with heavy workloads
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: workload-type
+                  operator: In
+                  values: ["cpu-intensive", "memory-intensive"]
+              topologyKey: kubernetes.io/hostname
+      
+      containers:
+      - name: postgres
+        image: pgvector/pgvector:pg17
+        ports:
+        - containerPort: 5432
+          name: postgres
+        
+        # Resource allocation
+        resources:
+          limits:
+            cpu: "110"
+            memory: "500Gi"
+          requests:
+            cpu: "1"
+            memory: "100Gi"
+        
+        # Environment variables
+        env:
+        - name: POSTGRES_DB
+          value: "askaithena"
+        - name: POSTGRES_USER
+          value: "AithenaAdmin"
+        - name: POSTGRES_PASSWORD
+          value: "polus2has8"
+        - name: PGDATA
+          value: /var/lib/postgresql/data
+        - name: POSTGRES_INITDB_ARGS
+          value: "--encoding=UTF8 --locale=en_US.utf8 --data-checksums"
+        
+        # Mount points
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        - name: postgres-config
+          mountPath: /etc/postgresql-common/postgresql.conf
+          subPath: postgresql.conf
+        - name: init-scripts
+          mountPath: /docker-entrypoint-initdb.d
+        - name: shared-memory
+          mountPath: /dev/shm
+        
+        # Health checks
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -d askaithena -U $POSTGRES_USER
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -d askaithena -U $POSTGRES_USER
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+        
+        # Startup probe for long initialization
+        startupProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -d askaithena -U $POSTGRES_USER
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30  # 5 minutes to start
+        
+        # Pass custom config as arguments (allows entrypoint to handle initialization)
+        args:
+        - -c
+        - config_file=/etc/postgresql-common/postgresql.conf
+        
+        # Security context
+        securityContext:
+          runAsUser: 999
+          runAsGroup: 999
+      
+      # Pod-level security context
+      securityContext:
+        fsGroup: 999
+      
+      # Volumes
+      volumes:
+      - name: postgres-config
+        configMap:
+          name: postgres-config-loading  # Start with loading phase
+      - name: init-scripts
+        configMap:
+          name: postgres-init-scripts-loading  # Start with loading phase
+          defaultMode: 0755
+      - name: shared-memory
+        emptyDir:
+          medium: Memory
+          sizeLimit: 50Gi
+  
+  # VolumeClaimTemplate for persistent storage
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: manual
+      resources:
+        requests:
+          storage: 10Ti

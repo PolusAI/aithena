@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-plugins
+  namespace: box
+data:
+  enabled_plugins: |
+    [rabbitmq_management,rabbitmq_web_stomp].

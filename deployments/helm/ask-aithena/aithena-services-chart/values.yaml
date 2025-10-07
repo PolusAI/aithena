@@ -1,0 +1,145 @@
+# Default values for aithena-services-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Replica count for the deployment
+replicaCount: 1
+
+# Image configuration
+image:
+  repository: camilovelezr/aithena-services
+  tag: "1.1.2"
+  pullPolicy: Always
+
+# Image pull secrets (if needed for private registries)
+imagePullSecrets: []
+
+# Namespace configuration (optional - can be overridden by parent chart)
+# If not set, will use the release namespace
+namespace: ""
+
+# Service configuration
+service:
+  type: NodePort
+  port: 8000
+  targetPort: 8000
+  nodePort: 32103
+  name: http
+
+# PostgreSQL database configuration
+postgres:
+  host: askaithena-db
+  port: 5432
+  user: AithenaAdmin
+  database: askaithena
+
+# Secret configuration
+secret:
+  # If existingSecret is set, it will use an existing secret instead of creating a new one
+  # The secret should contain a key named 'postgres_password'
+  existingSecret: ""
+  # If not using existing secret, provide the password here (base64 encoded for production)
+  # This is a placeholder value - should be overridden in production
+  postgresPassword: "YmFzZTY0X2VuY29kZWRfcGFzc3dvcmQ="
+
+# Health check probes
+probes:
+  readiness:
+    enabled: true
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 15
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+  
+  liveness:
+    enabled: true
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+
+# Resource limits and requests
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 500m
+  #   memory: 512Mi
+  # requests:
+  #   cpu: 250m
+  #   memory: 256Mi
+
+# Node selector for pod assignment
+nodeSelector: {}
+
+# Tolerations for pod assignment
+tolerations: []
+
+# Affinity for pod assignment
+affinity: {}
+
+# Pod annotations
+podAnnotations: {}
+
+# Pod security context
+podSecurityContext: {}
+  # fsGroup: 2000
+
+# Container security context
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# Labels to add to all resources
+commonLabels: {}
+
+# Annotations to add to all resources
+commonAnnotations: {}
+
+# Additional environment variables (key-value pairs)
+extraEnvVars: []
+# - name: EXTRA_VAR
+#   value: "extra_value"
+
+# Additional volume mounts
+extraVolumeMounts: []
+# - name: extra-volume
+#   mountPath: /extra-path
+
+# Additional volumes
+extraVolumes: []
+# - name: extra-volume
+#   configMap:
+#     name: extra-configmap
+
+# Service account configuration (if needed in future)
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# Autoscaling configuration (optional - not enabled by default)
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80

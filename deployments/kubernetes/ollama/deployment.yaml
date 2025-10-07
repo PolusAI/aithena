@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  namespace: box
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      containers:
+      - name: ollama
+        image: ollama/ollama:0.11.10
+        ports:
+        - containerPort: 11434
+        volumeMounts:
+        - name: ollama-models-volume
+          mountPath: /root/.ollama
+        resources:
+          requests:
+            nvidia.com/gpu: 2
+          limits:
+            nvidia.com/gpu: 2
+        env:
+        # - name: OLLAMA_SCHED_SPREAD
+        #   value: "0"
+        - name: OLLAMA_DEBUG
+          value: "1"
+        - name: OLLAMA_FLASH_ATTENTION
+          value: "1"
+        readinessProbe:
+          httpGet:
+            path: /api/tags
+            port: 11434
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        livenessProbe:
+          httpGet:
+            path: /api/tags
+            port: 11434
+          initialDelaySeconds: 30
+          periodSeconds: 30
+      volumes:
+      - name: ollama-models-volume
+        persistentVolumeClaim:
+          claimName: ollama-models-pvc 

@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: arctic-direct
+  namespace: box
+spec:
+  replicas: 6
+  serviceName: arctic-direct-headless
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: arctic-direct
+  template:
+    metadata:
+      labels:
+        app: arctic-direct
+    spec:
+      imagePullSecrets:
+      - name: my-docker-creds
+      containers:
+      - name: arctic-direct
+        image: camilovelezr/arctic:0.1.0
+        command:
+        - python
+        - -m
+        - arctic_inference.embedding.replica_manager
+        args:
+        - "--model"
+        - "/root/.cache/huggingface/hub/models--Snowflake--snowflake-arctic-embed-l-v2.0/snapshots/dcf86e284785c825570c5fd512ddd682b386fa3d"
+        - "--trust-remote-code"
+        - "--host"
+        - "0.0.0.0"
+        - "--port"
+        - "8000"
+        - "--num-replicas"
+        - "3"
+        - "--task"
+        - "embed"
+        ports:
+        - containerPort: 8000
+          name: http
+        resources:
+          requests:
+            nvidia.com/gpu: 1
+            memory: "42Gi"
+            cpu: "9"
+          limits:
+            nvidia.com/gpu: 1
+            memory: "96Gi"
+            cpu: "16"
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - mountPath: /root/.cache/huggingface
+          name: cache-volume
+        - name: shm
+          mountPath: /dev/shm
+      volumes:
+      # vLLM needs to access the host's shared memory for tensor parallel inference.
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: "200Gi"
+  volumeClaimTemplates:
+  - metadata:
+      name: cache-volume
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: manual
+      resources:
+        requests:
+          storage: 50Gi

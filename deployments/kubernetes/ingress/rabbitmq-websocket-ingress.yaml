@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rabbitmq-websocket-ingress
+  namespace: box
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/rewrite-target: /ws
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/websocket-services: "rabbitmq-service"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+spec:
+  ingressClassName: public
+  rules:
+  - http:
+      paths:
+      # RabbitMQ WebSocket for /api path
+      - path: /api/rabbitmq/ws
+        pathType: Exact
+        backend:
+          service:
+            name: rabbitmq-service
+            port:
+              number: 15674
+      # RabbitMQ WebSocket for /askaithena path
+      - path: /askaithena/rabbitmq/ws
+        pathType: Exact
+        backend:
+          service:
+            name: rabbitmq-service
+            port:
+              number: 15674

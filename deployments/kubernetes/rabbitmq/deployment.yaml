@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:4.1.2-management
+        ports:
+        - containerPort: 5672  # AMQP port
+        - containerPort: 15672 # Management interface
+        - containerPort: 15674 # Web STOMP plugin
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: "guest"
+        - name: RABBITMQ_DEFAULT_PASS
+          value: "guest"
+        - name: HOSTNAME
+          value: "my-rabbit"
+        volumeMounts:
+        - name: plugins-config
+          mountPath: /etc/rabbitmq/enabled_plugins
+          subPath: enabled_plugins
+      volumes:
+      - name: plugins-config
+        configMap:
+          name: rabbitmq-plugins

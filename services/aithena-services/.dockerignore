@@ -1,7 +1,11 @@
 .vscode
 **/.venv/
 .mypy_cache
-.env
+*.env
+**/.env
+**/**/.env
+**/**/**/.env
+.env.*
 
 #logs
 *.out

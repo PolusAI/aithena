@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ask-aithena-app-chart.fullname" . }}-config
+  labels:
+    {{- include "ask-aithena-app-chart.labels" . | nindent 4 }}
+data:
+  # Environment setting
+  APP_ENV: {{ .Values.config.appEnv | quote }}
+  NEXT_PUBLIC_APP_ENV: {{ .Values.config.appEnv | quote }}
+  
+  # Client-side URLs (what browser sees)
+  NEXT_PUBLIC_API_URL: {{ .Values.config.nextPublicApiUrl | quote }}
+  NEXT_PUBLIC_RABBITMQ_WS_URL: {{ .Values.config.nextPublicRabbitmqWsUrl | quote }}
+  
+  # Server-side URLs (internal Kubernetes services)
+  INTERNAL_API_URL: {{ .Values.config.internalApiUrl | quote }}
+  INTERNAL_RABBITMQ_WS_URL: {{ .Values.config.internalRabbitmqWsUrl | quote }}

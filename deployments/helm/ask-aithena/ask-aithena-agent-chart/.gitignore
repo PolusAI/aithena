@@ -1,0 +1,36 @@
+# Helm package files
+*.tgz
+
+# Values files with sensitive data
+*-values.yaml
+values-*.yaml
+!values.yaml
+
+# Secret files
+*secret*
+!templates/secret.yaml
+!secret_sample.yaml
+
+# Environment files
+.env
+.env.*
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Helm dependencies
+charts/*.tgz
+requirements.lock

@@ -1,0 +1,45 @@
+# Docker Compose for OpenAlex API with SQLite for job tracking
+# Connects to an external PostgreSQL database for OpenAlex data
+
+services:
+  # OpenAlex API service
+  openalex-api:
+    container_name: openalex-api
+    build:
+      context: ../..
+      dockerfile: jobs/get-openalex/Dockerfile
+    volumes:
+      # Mount SQLite database directory for job tracking
+      - sqlite_data:/app/data
+      # Mount logs directory
+      - ./logs:/app/logs
+    environment:
+      # Database URLs - replace with your external PostgreSQL connection
+      OPENALEX_POSTGRES_URL: "${POSTGRES_URL:-postgresql://postgres:postgres@host.docker.internal:5432/openalex}"
+      JOB_DATABASE_URL: "sqlite:////app/data/openalex_jobs.db"
+      # PostgreSQL settings
+      USE_POSTGRES: "${USE_POSTGRES:-false}"
+      # Update settings
+      OPENALEX_UPDATE_BATCH_SIZE: "${UPDATE_BATCH_SIZE:-100}"
+      OPENALEX_UPDATE_MAX_RECORDS: "${UPDATE_MAX_RECORDS:-10000}" 
+      # API settings
+      API_HOST: "0.0.0.0"
+      API_PORT: "8000"
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+    ports:
+      - "${API_PORT:-8000}:8000"
+    restart: unless-stopped
+    # Add healthcheck for the API service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 2
+      start_period: 10s
+    env_file:
+      - .env
+
+# Named volumes
+volumes:
+  sqlite_data:
+    driver: local 

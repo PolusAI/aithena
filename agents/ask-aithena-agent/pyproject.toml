@@ -1,30 +1,58 @@
-[tool.poetry]
+[project]
 name = "ask-aithena-agent"
-version = "0.1.2-dev2"
-description = ""
-authors = ["Antoine Gerardin <antoine.gerardin@nih.gov>, Camilo Velez <camilo.velezramirez@nih.gov>"]
+version = "1.1.4"
+description = "Ask AIthena Agent and Workflow"
+authors = [{name="Camilo Velez", email="camilo.velezramirez@nih.gov"}, {name="Antoine Gerardin", email="antoine.gerardin@nih.gov"}]
+requires-python = ">=3.12,<3.13"
 readme = "README.md"
-packages = [{include = "polus", from = "src"}]
+dependencies = [
+    "uvicorn>=0.30.6,<0.31",
+    "requests>=2.32.3,<3",
+    "qdrant-client>=1.11.3,<2",
+    "openai>=1.65.5,<2",
+    "orjson>=3.10.15,<4",
+    "spacy>=3.8.4,<4",
+    "en_core_web_md",
+    "scikit-learn>=1.6.1,<2",
+    "faststream[rabbit]>=0.5.35",
+    "fastapi[standard]>=0.115.14",
+    "aithena-embeddings",
+    "logfire[fastapi,httpx]>=3.5.1",
+    "httpx>=0.28.1",
+    "pydantic-ai>=0.4.3",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-polus-aithena-common = {path= "../../common", develop=true}
-fastapi = "^0.114.1"
-uvicorn = "^0.30.6"
-requests = "^2.32.3"
-httpx = "^0.27.2"
-qdrant-client = "^1.11.3"
+[project.scripts]
+ask-aithena = "polus.aithena.ask_aithena.cli.main:main"
 
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^3.8.0"
-bump2version = "^1.0.1"
-pytest = "^8.3.2"
-pytest-sugar = "^1.0.0"
-pytest-xdist = "^3.6.1"
+[dependency-groups]
+dev = [
+    "bump2version>=1.0.1,<2",
+    "pytest>=8.3.2,<9",
+    "pytest-sugar>=1.0.0,<2",
+    "pytest-xdist>=3.6.1,<4",
+    "ask-aithena-agent",
+]
+
+[tool.uv]
+
+[tool.uv.sources]
+en_core_web_md = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.8.0/en_core_web_md-3.8.0-py3-none-any.whl" }
+ask-aithena-agent = { workspace = true }
+aithena-embeddings = { path = "../../embeddings" }
+
+[tool.hatch.build.targets.sdist]
+include = ["src/polus"]
+
+[tool.hatch.build.targets.wheel]
+include = ["src/polus"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/polus" = "polus"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 pythonpath = [

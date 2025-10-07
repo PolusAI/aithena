@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aithena-services
+  namespace: box
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aithena-services
+  template:
+    metadata:
+      labels:
+        app: aithena-services
+    spec:
+      containers:
+      - name: aithena-services
+        image: camilovelezr/aithena-services:1.1.2
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        - name: POSTGRES_HOST
+          value: askaithena-db
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_USER
+          value: "AithenaAdmin"
+        - name: POSTGRES_DB
+          value: "askaithena"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: aithena-services-secret
+              key: postgres_password
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30

@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "ollama-chart.fullname" . }}
+  labels:
+    {{- include "ollama-chart.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "ollama-chart.fullname" . }}-headless-service
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ollama-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ollama-chart.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ollama-chart.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Chart.Name }}
+        {{- with .Values.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: {{ .Values.service.name }}
+          containerPort: {{ .Values.service.targetPort }}
+          protocol: {{ .Values.service.protocol }}
+        env:
+        - name: OLLAMA_DEBUG
+          value: {{ .Values.env.debug | quote }}
+        - name: OLLAMA_FLASH_ATTENTION
+          value: {{ .Values.env.flashAttention | quote }}
+        {{- if .Values.env.schedSpread }}
+        - name: OLLAMA_SCHED_SPREAD
+          value: {{ .Values.env.schedSpread | quote }}
+        {{- end }}
+        {{- if .Values.probes.readiness.enabled }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.probes.readiness.httpGet.path }}
+            port: {{ .Values.probes.readiness.httpGet.port }}
+          initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+          timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+          successThreshold: {{ .Values.probes.readiness.successThreshold }}
+          failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+        {{- end }}
+        {{- if .Values.probes.liveness.enabled }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.probes.liveness.httpGet.path }}
+            port: {{ .Values.probes.liveness.httpGet.port }}
+          initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+          timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+          successThreshold: {{ .Values.probes.liveness.successThreshold }}
+          failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+        {{- end }}
+        resources:
+          {{- if .Values.resources.gpu.count }}
+          requests:
+            nvidia.com/gpu: {{ .Values.resources.gpu.count }}
+            {{- with .Values.resources.requests }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          limits:
+            nvidia.com/gpu: {{ .Values.resources.gpu.count }}
+            {{- with .Values.resources.limits }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- else }}
+          {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}
+        volumeMounts:
+        - name: ollama-models-volume
+          mountPath: /root/.ollama
+        {{- with .Values.extraVolumeMounts }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: ollama-models-volume
+        persistentVolumeClaim:
+          claimName: {{ include "ollama-chart.pvcName" . }}
+      {{- with .Values.extraVolumes }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}

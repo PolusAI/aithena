@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arctic-direct
+  namespace: box
+  labels:
+    app: arctic-direct
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: arctic-direct
+  template:
+    metadata:
+      labels:
+        app: arctic-direct
+    spec:
+      imagePullSecrets:
+      - name: my-docker-creds
+      containers:
+      - name: arctic-direct
+        image: camilovelezr/arctic:0.1.0
+        command:
+        - python
+        - -m
+        - arctic_inference.embedding.replica_manager
+        args:
+        - "--model"
+        - "/root/.cache/huggingface/hub/models--Snowflake--snowflake-arctic-embed-l-v2.0/snapshots/dcf86e284785c825570c5fd512ddd682b386fa3d"
+        - "--trust-remote-code"
+        - "--host"
+        - "0.0.0.0"
+        - "--port"
+        - "8000"
+        - "--num-replicas"
+        - "3"
+        - "--task"
+        - "embed"
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - mountPath: /root/.cache/huggingface
+          name: arctic-direct-volume
+        - name: shm
+          mountPath: /dev/shm
+        resources:
+          requests:
+            nvidia.com/gpu: "1"
+          limits:
+            nvidia.com/gpu: "1"
+        # env:
+        # - name: OLLAMA_SCHED_SPREAD
+        #   value: "0"
+          
+      volumes:
+      - name: arctic-direct-volume
+        persistentVolumeClaim:
+          claimName: arctic-direct-pvc
+      # vLLM needs to access the host's shared memory for tensor parallel inference.
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: "50Gi"

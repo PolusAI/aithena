@@ -1,0 +1,33 @@
+apiVersion: v2
+name: ask-aithena-agent-chart
+description: A Helm chart for Ask AiThena Agent - AI-powered research assistant
+
+# A chart can be either an 'application' or a 'library' chart.
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+# Versions are expected to follow Semantic Versioning (https://semver.org/)
+version: 0.1.0
+
+# This is the version number of the application being deployed. This version number should be
+# incremented each time you make changes to the application.
+appVersion: "1.1.2"
+
+keywords:
+  - ai
+  - agent
+  - research
+  - assistant
+  - aithena
+
+maintainers:
+  - name: AI Thena Team
+    email: aithena@example.com
+
+home: https://github.com/camilovelezr/aithena
+sources:
+  - https://github.com/camilovelezr/aithena
+  - https://hub.docker.com/r/camilovelezr/ask-aithena-agent
+
+icon: https://raw.githubusercontent.com/camilovelezr/aithena/main/apps/ask-aithena-app/owl.svg

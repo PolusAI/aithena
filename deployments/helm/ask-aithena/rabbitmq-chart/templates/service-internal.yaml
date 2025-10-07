@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rabbitmq-chart.fullname" . }}-internal
+  labels:
+    {{- include "rabbitmq-chart.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.internal.type }}
+  ports:
+    - port: {{ .Values.service.internal.ports.amqp.port }}
+      targetPort: {{ .Values.service.internal.ports.amqp.targetPort }}
+      protocol: TCP
+      name: amqp
+    - port: {{ .Values.service.internal.ports.management.port }}
+      targetPort: {{ .Values.service.internal.ports.management.targetPort }}
+      protocol: TCP
+      name: management
+    - port: {{ .Values.service.internal.ports.stomp.port }}
+      targetPort: {{ .Values.service.internal.ports.stomp.targetPort }}
+      protocol: TCP
+      name: stomp
+  selector:
+    {{- include "rabbitmq-chart.selectorLabels" . | nindent 4 }}

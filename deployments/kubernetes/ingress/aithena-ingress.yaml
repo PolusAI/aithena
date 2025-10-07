@@ -1,0 +1,138 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aithena-ingress
+  namespace: box
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # Global extreme timeouts (4 hours)
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "14400"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "14400"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "14400"
+    nginx.ingress.kubernetes.io/client-header-timeout: "14400"
+    nginx.ingress.kubernetes.io/client-body-timeout: "14400"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/client-body-buffer-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
+    # WebSocket support
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$binary_remote_addr"
+    # Configuration snippet for additional nginx directives
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "Keep-Alive: timeout=14400";
+      tcp_nodelay on;
+      tcp_nopush on;
+      keepalive_timeout 14400;
+      keepalive_requests 10000;
+spec:
+  ingressClassName: public
+  rules:
+  - http:
+      paths:
+      # Exact match for /api/ask with extreme settings
+      - path: /api/ask
+        pathType: Exact
+        backend:
+          service:
+            name: ask-aithena-app-service
+            port:
+              number: 80
+      
+      # Health check endpoint with shorter timeouts
+      - path: /api/health
+        pathType: Exact
+        backend:
+          service:
+            name: ask-aithena-app-service
+            port:
+              number: 80
+      
+      # Endpoints discovery
+      - path: /api/endpoints
+        pathType: Exact
+        backend:
+          service:
+            name: ask-aithena-app-service
+            port:
+              number: 80
+      
+      # Other API requests
+      - path: /api/
+        pathType: Prefix
+        backend:
+          service:
+            name: ask-aithena-app-service
+            port:
+              number: 80
+      
+      # Next.js static files
+      - path: /_next/
+        pathType: Prefix
+        backend:
+          service:
+            name: ask-aithena-app-service
+            port:
+              number: 80
+      
+      # Root path (catch-all, should be last)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ask-aithena-app-service
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aithena-ingress-litellm
+  namespace: box
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+spec:
+  ingressClassName: public
+  rules:
+  - http:
+      paths:
+      # LiteLLM with path rewriting
+      - path: /litellm(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: litellm-service
+            port:
+              number: 4000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aithena-ingress-askaithena
+  namespace: box
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    # Extreme timeouts for askaithena
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "14400"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "14400"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "14400"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+spec:
+  ingressClassName: public
+  rules:
+  - http:
+      paths:
+      # Main askaithena app with path rewriting
+      - path: /askaithena(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: ask-aithena-app-service
+            port:
+              number: 80

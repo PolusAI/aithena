@@ -1,0 +1,24 @@
+{{- if .Values.service.management.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rabbitmq-chart.fullname" . }}-management
+  labels:
+    {{- include "rabbitmq-chart.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.management.type }}
+  ports:
+    - port: {{ .Values.service.management.port }}
+      targetPort: {{ .Values.service.management.targetPort }}
+      {{- if and (eq .Values.service.management.type "NodePort") .Values.service.management.nodePort }}
+      nodePort: {{ .Values.service.management.nodePort }}
+      {{- end }}
+      protocol: TCP
+      name: management-ui
+  selector:
+    {{- include "rabbitmq-chart.selectorLabels" . | nindent 4 }}
+{{- end }}

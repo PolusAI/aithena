@@ -1,35 +1,46 @@
-[tool.poetry]
+[project]
 name = "aithena-services"
-version = "1.0.0-dev0"
+version = "1.1.3"
 description = "Services to interact with pgvector database"
-authors = ["Camilo Velez <camilo.velez@axleinfo.com>, Antoine Gerardin <antoine.gerardin@nextonicsolutions.com>"]
+authors = [{ name = "Camilo Velez", email = "camilo.velez@axleinfo.com"}, {nam="Antoine Gerardin", email = "antoine.gerardin@nextonicsolutions.com" }]
+requires-python = ">=3.11,<3.12"
 readme = "README.md"
-packages = [{include = "aithena_services", from = "src"}]
+dependencies = [
+    "fastapi[standard]>=0.112.0",
+    "psycopg[binary]>=3.2.3,<4",
+    "uvicorn[standard]>=0.27.1,<0.28",
+    "asyncpg>=0.30.0",
+    "orjson>=3.10.18",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.11,<3.12"
-fastapi = {extras = ["standard"], version = ">=0.112.0"}
-polus-aithena-common = {path= "../../common", develop=true}
-psycopg = {extras = ["binary"], version = "^3.2.3"}
-openalex-types = {git="https://github.com/camilovelezr/openalex-types.git"}
-uvicorn = {extras = ["standard"], version = "^0.27.1"}
+[project.scripts]
+aithena-services = "aithena_services.cli.main:main"
 
+[dependency-groups]
+dev = [
+    "pytest>=8.3.2,<9",
+    "pytest-asyncio>=0.23.8,<0.24",
+]
+test = ["bump2version>=1.0.1,<2"]
 
+[tool.uv]
+default-groups = [
+    "dev",
+    "test",
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.2"
-pytest-asyncio = "^0.23.8"
+[tool.hatch.build.targets.sdist]
+include = ["src/aithena_services"]
 
+[tool.hatch.build.targets.wheel]
+include = ["src/aithena_services"]
 
-[tool.poetry.group.test.dependencies]
-bump2version = "^1.0.1"
+[tool.hatch.build.targets.wheel.sources]
+"src/aithena_services" = "aithena_services"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-aithena-services = "aithena_services.cli.main:main"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

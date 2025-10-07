@@ -1,0 +1,37 @@
+<svg width="500" height="500" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Owl Body -->
+  <ellipse cx="250" cy="270" rx="140" ry="160" fill="#6A5ACD"/>
+  
+  <!-- Owl Facial Disc -->
+  <circle cx="250" cy="240" r="120" fill="#F8F8FF"/>
+  
+  <!-- Eyes -->
+  <circle cx="200" cy="220" r="40" fill="#F5F5F5"/>
+  <circle cx="300" cy="220" r="40" fill="#F5F5F5"/>
+  
+  <!-- Eye pupils -->
+  <circle cx="200" cy="220" r="24" fill="#4B0082"/>
+  <circle cx="300" cy="220" r="24" fill="#4B0082"/>
+  
+  <!-- Eye highlights -->
+  <circle cx="190" cy="210" r="10" fill="white"/>
+  <circle cx="290" cy="210" r="10" fill="white"/>
+  
+  <!-- Beak -->
+  <path d="M250 240 L230 280 L270 280 Z" fill="#FFD700"/>
+  
+  <!-- Ears/Tufts -->
+  <path d="M160 170 Q200 120 190 180 Z" fill="#6A5ACD"/>
+  <path d="M340 170 Q300 120 310 180 Z" fill="#6A5ACD"/>
+  
+  <!-- Eyebrows -->
+  <path d="M160 190 Q200 170 190 200 Z" fill="#6A5ACD"/>
+  <path d="M340 190 Q300 170 310 200 Z" fill="#6A5ACD"/>
+  
+  <!-- Feet -->
+  <path d="M220 430 Q250 400 280 430 L250 390 Z" fill="#FFD700"/>
+  
+  <!-- Wings -->
+  <path d="M110 270 Q150 240 140 320 Q120 310 110 270 Z" fill="#6A5ACD"/>
+  <path d="M390 270 Q350 240 360 320 Q380 310 390 270 Z" fill="#6A5ACD"/>
+</svg>

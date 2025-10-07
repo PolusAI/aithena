@@ -1,0 +1,11 @@
+{{- if .Values.config.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "litellm-chart.fullname" . }}-config
+  labels:
+    {{- include "litellm-chart.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    {{- toYaml .Values.config.data | nindent 4 }}
+{{- end }}

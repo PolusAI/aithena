@@ -1,24 +1,27 @@
-FROM python:3.11-slim
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
 # Environment variables
 ENV AITHENA_LOG_LEVEL="DEBUG"
-ENV EXEC_DIR="/opt/executables"
-WORKDIR ${EXEC_DIR}
-
-
-# Copy the required directories
-COPY common ${EXEC_DIR}/aithena/common
-COPY services/aithena-services ${EXEC_DIR}/aithena/services/aithena-services
 
 # Set environment variables to avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install Git and other dependencies in a single RUN command for efficiency
-RUN apt-get update && apt-get install -y --no-install-recommends git && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+# Create a non-root user and switch to it
+RUN useradd -m -u 1000 user
+USER user
 
-# Install the tool using pip
-RUN pip3 install "${EXEC_DIR}/aithena/services/aithena-services"
+# Set working directory inside user's home
+WORKDIR /home/user/app
+
+# Copy project definition and lock file
+COPY --chown=user:user ./pyproject.toml ./uv.lock ./
+# Copy the README file
+COPY --chown=user:user ./README.md ./README.md
+# Install dependencies
+RUN uv sync
+
+# Copy the rest of the application
+COPY --chown=user:user ./src ./src
 
 # Expose the application port
 EXPOSE 8000
@@ -26,4 +29,4 @@ EXPOSE 8000
 # Run the application using the CLI
 # Environment variables can be passed via docker run -e or docker-compose environment:
 # Example: docker run -e POSTGRES_HOST=my-db-host -e POSTGRES_PORT=5433 ...
-CMD ["aithena-services", "serve", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "aithena-services", "serve", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,0 +1,22 @@
+{{- if and .Values.persistence.enabled .Values.persistence.hostPath.enabled (not .Values.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "litellm-db-chart.pvName" . }}
+  labels:
+    {{- include "litellm-db-chart.labels" . | nindent 4 }}
+spec:
+  capacity:
+    storage: {{ .Values.persistence.size }}
+  volumeMode: Filesystem
+  accessModes:
+    - {{ .Values.persistence.accessMode }}
+  persistentVolumeReclaimPolicy: {{ .Values.persistence.reclaimPolicy }}
+  storageClassName: {{ .Values.persistence.storageClassName }}
+  hostPath:
+    path: {{ .Values.persistence.hostPath.path | quote }}
+    type: {{ .Values.persistence.hostPath.type }}
+  claimRef:
+    name: {{ include "litellm-db-chart.pvcName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

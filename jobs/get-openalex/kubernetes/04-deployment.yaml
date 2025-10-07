@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openalex-api
+  namespace: default
+  labels:
+    app: openalex-api
+spec:
+  replicas: 2  # Adjust based on load
+  selector:
+    matchLabels:
+      app: openalex-api
+  template:
+    metadata:
+      labels:
+        app: openalex-api
+    spec:
+      containers:
+      - name: openalex-api
+        # Replace with your container registry and image
+        image: openalex/get-openalex:latest
+        imagePullPolicy: Always
+        command: ["get-openalex", "serve"]
+        args: ["--host", "0.0.0.0", "--port", "8000"]
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        # Environment variables from ConfigMap
+        - name: PYALEX_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: openalex-config
+              key: PYALEX_EMAIL
+        - name: UPDATE_BATCH_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: openalex-config
+              key: UPDATE_BATCH_SIZE
+        - name: UPDATE_MAX_RECORDS
+          valueFrom:
+            configMapKeyRef:
+              name: openalex-config
+              key: UPDATE_MAX_RECORDS
+        - name: JOB_DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: openalex-config
+              key: JOB_DATABASE_URL
+        - name: USE_POSTGRES
+          valueFrom:
+            configMapKeyRef:
+              name: openalex-config
+              key: USE_POSTGRES
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: openalex-config
+              key: LOG_LEVEL
+        # Environment variables from Secret
+        - name: POSTGRES_URL
+          valueFrom:
+            secretKeyRef:
+              name: openalex-secrets
+              key: POSTGRES_URL
+              optional: true
+        - name: OPENALEX_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openalex-secrets
+              key: OPENALEX_API_KEY
+              optional: true
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: openalex-data-pvc

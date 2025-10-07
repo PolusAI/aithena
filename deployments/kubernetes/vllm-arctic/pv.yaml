@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: arctic-direct-pv
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /home/velezramirezc2/.cache/huggingface
+    type: Directory
+  storageClassName: manual
+  persistentVolumeReclaimPolicy: Retain

@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vllm-nemotron
+  namespace: box
+spec:
+  replicas: 1
+  serviceName: vllm-nemotron-headless
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: vllm-nemotron
+  template:
+    metadata:
+      labels:
+        app: vllm-nemotron
+    spec:
+      containers:
+      - name: vllm-nemotron
+        image: vllm/vllm-openai:v0.9.2
+        command: ["/bin/sh", "-c"]
+        args: [
+          "vllm serve mistralai/Mistral-Small-3.2-24B-Instruct-2506 \
+          --trust-remote-code \
+          --task generate \
+          --tensor-parallel-size 4 \
+          --tokenizer_mode mistral \
+          --config_format mistral \
+          --load_format mistral \
+          --tool-call-parse mistral \
+          --enable-auto-tool-choice \
+          --quantization fp8"
+        ]
+        ports:
+        - containerPort: 8000
+          name: http
+        resources:
+          requests:
+            nvidia.com/gpu: 4
+            memory: "8Gi"
+            cpu: "4"
+          limits:
+            nvidia.com/gpu: 4
+            memory: "12Gi"
+            cpu: "6"
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 120
+          periodSeconds: 60
+          timeoutSeconds: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 120
+          periodSeconds: 60
+          timeoutSeconds: 30
+        volumeMounts:
+        - mountPath: /root/.cache/huggingface
+          name: cache-volume
+        - name: shm
+          mountPath: /dev/shm
+      volumes:
+      # vLLM needs to access the host's shared memory for tensor parallel inference.
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: "100Gi"
+  volumeClaimTemplates:
+  - metadata:
+      name: cache-volume
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: manual
+      resources:
+        requests:
+          storage: 100Gi

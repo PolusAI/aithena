@@ -1,0 +1,431 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Base theme variables */
+:root {
+    color-scheme: light;
+    --foreground-rgb: 15, 23, 42;
+    --background-rgb: 255, 255, 255;
+    --primary-color: #0da2e7;
+    --scrollbar-width: 8px;
+    --scrollbar-height: 8px;
+    --scrollbar-track-color: transparent;
+    --scrollbar-thumb-color: rgba(0, 0, 0, 0.2);
+    --scrollbar-thumb-hover-color: rgba(0, 0, 0, 0.3);
+}
+
+:root.dark {
+    color-scheme: dark;
+    --foreground-rgb: 255, 255, 255;
+    --background-rgb: 15, 23, 42;
+    --primary-color: #0da2e7;
+    --scrollbar-thumb-color: rgba(255, 255, 255, 0.2);
+    --scrollbar-thumb-hover-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Create dark-200 variable that was missing */
+.dark .dark-200 {
+    background-color: #252f44;
+}
+
+/* Smooth transitions */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInFromBottom {
+    from {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Use minimal transitions for theme changes */
+html.theme-transitions-ready,
+html.theme-transitions-ready body,
+html.theme-transitions-ready header {
+    transition: background-color 0.2s ease;
+}
+
+html.theme-transitions-ready button,
+html.theme-transitions-ready input,
+html.theme-transitions-ready span,
+html.theme-transitions-ready div {
+    transition: color 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Material Icons overrides */
+.material-symbols-outlined {
+    transition: none !important;
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24 !important;
+}
+
+.dark .material-symbols-outlined {
+    color: inherit !important;
+}
+
+/* Modern scrollbar styling */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+}
+
+::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+    height: var(--scrollbar-height);
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track-color);
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb-color);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover-color);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* Custom utility classes */
+.glass-effect {
+    backdrop-filter: blur(16px);
+    background-color: rgb(255 255 255 / 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-effect-dark {
+    backdrop-filter: blur(16px);
+    background-color: rgb(15 23 42 / 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.text-gradient {
+    background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(to right, var(--primary-color), var(--primary-color));
+}
+
+.hover-card {
+    transition: all 300ms ease-in-out;
+}
+
+.hover-card:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    transform: translateY(-0.25rem);
+}
+
+/* References styling */
+.references-content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb-color) transparent;
+    max-height: none !important;
+    /* Override any max-height constraints */
+}
+
+.references-wrapper {
+    padding-bottom: 0.5rem;
+}
+
+.references-wrapper a {
+    word-break: break-all;
+    font-size: 0.875rem;
+}
+
+.references-wrapper .text-gray-400 {
+    font-size: 0.875rem;
+}
+
+details summary {
+    position: relative;
+    padding-left: 1.5rem;
+    list-style: none;
+    user-select: none;
+    font-size: 0.9375rem;
+}
+
+details summary::-webkit-details-marker {
+    display: none;
+}
+
+details summary::before {
+    content: '▶';
+    position: absolute;
+    left: 0;
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+    transform-origin: center;
+}
+
+details[open] summary::before {
+    transform: rotate(90deg);
+}
+
+/* Ensure proper contrast and visibility */
+.dark header {
+    background-color: rgb(15 23 42);
+}
+
+.dark input[type="text"],
+.dark textarea {
+    background-color: rgb(15 23 42);
+    color: white;
+}
+
+/* Button styling */
+button {
+    transition: all 200ms ease-in-out;
+}
+
+button:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+/* Focus styles */
+.focus-ring:focus {
+    outline: none;
+    /* box-shadow: 0 0 0 2px rgba(13, 162, 231, 0.5), 0 0 0 4px white; */
+}
+
+.dark .focus-ring:focus {
+    outline: none;
+    /* box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5), 0 0 0 4px rgb(15 23 42); */
+}
+
+/* Enhanced Markdown Rendering */
+.markdown-content {
+    /* Remove pre-line to prevent double spacing */
+    white-space: normal;
+}
+
+.markdown-content p {
+    /* Normal white space handling */
+    white-space: normal;
+    margin-bottom: 1rem;
+}
+
+.markdown-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* List styling enhancements */
+.markdown-content ul,
+.markdown-content ol {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.markdown-content li {
+    position: relative;
+    padding-left: 0.25rem;
+}
+
+.markdown-content li p {
+    margin-bottom: 0.25rem;
+}
+
+.markdown-content li p:last-child {
+    margin-bottom: 0;
+}
+
+/* Nested list styling */
+.markdown-content li > ul,
+.markdown-content li > ol {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Code block enhancements */
+.markdown-content pre {
+    font-family: 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+    tab-size: 4;
+}
+
+.markdown-content pre code {
+    font-size: 0.875rem;
+    line-height: 1.625;
+}
+
+/* Inline code styling */
+.markdown-content :not(pre) > code {
+    font-family: 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+/* Table enhancements */
+.markdown-content table {
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.markdown-content th,
+.markdown-content td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+}
+
+.markdown-content th {
+    font-weight: 600;
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.dark .markdown-content th {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.markdown-content tbody tr {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dark .markdown-content tbody tr {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Blockquote styling */
+.markdown-content blockquote {
+    position: relative;
+    font-style: italic;
+}
+
+.markdown-content blockquote::before {
+    content: '"';
+    position: absolute;
+    left: -0.5rem;
+    top: -0.5rem;
+    font-size: 3rem;
+    opacity: 0.15;
+    font-family: Georgia, serif;
+}
+
+/* Link hover effects */
+.markdown-content a {
+    text-decoration: none;
+    position: relative;
+}
+
+.markdown-content a::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: currentColor;
+    opacity: 0.3;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.2s ease;
+}
+
+.markdown-content a:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+/* Strong text enhancement */
+.markdown-content strong {
+    font-weight: 600;
+}
+
+/* Horizontal rule styling */
+.markdown-content hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.2) 20%, rgba(0, 0, 0, 0.2) 80%, transparent);
+}
+
+.dark .markdown-content hr {
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.2) 80%, transparent);
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        transition-delay: 0ms !important;
+    }
+}
+
+/* Syntax highlighting improvements */
+.hljs {
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+/* Custom list markers */
+.markdown-content ul > li::marker {
+    color: #0da2e7;
+}
+
+.markdown-content ol > li::marker {
+    color: #0da2e7;
+    font-weight: 600;
+}
+
+/* Task list styling */
+.markdown-content input[type="checkbox"] {
+    margin-right: 0.5rem;
+    transform: scale(1.2);
+}
+
+/* Better spacing between different content types */
+.markdown-content > * + h1,
+.markdown-content > * + h2,
+.markdown-content > * + h3,
+.markdown-content > * + h4,
+.markdown-content > * + h5,
+.markdown-content > * + h6 {
+    margin-top: 1.5em;
+}
+
+.markdown-content h1 + *,
+.markdown-content h2 + *,
+.markdown-content h3 + *,
+.markdown-content h4 + *,
+.markdown-content h5 + *,
+.markdown-content h6 + * {
+    margin-top: 0.5em;
+}
