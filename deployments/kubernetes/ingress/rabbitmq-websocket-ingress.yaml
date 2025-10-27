@@ -15,7 +15,8 @@ metadata:
 spec:
   ingressClassName: public
   rules:
-  - http:
+  - host: polus2.ncats.nih.gov
+    http:
       paths:
       # RabbitMQ WebSocket for /api path
       - path: /api/rabbitmq/ws
