@@ -7,6 +7,7 @@ from polus.aithena.ask_aithena.config import (
     ARCTIC_PORT,
     HTTPX_TIMEOUT,
     AITHENA_LOG_LEVEL,
+    EMBEDDING_MODEL,
 )
 from polus.aithena.ask_aithena.logfire_logger import logfire
 from faststream.rabbit import RabbitBroker
@@ -15,7 +16,7 @@ from polus.aithena.ask_aithena.rabbit import (
     ask_aithena_queue,
     ProcessingStatus,
 )
-from polus.aithena.embeddings import ArcticClient, SNOWFLAKE_L_V2
+from polus.aithena.embeddings import ArcticClient
 import logging
 from typing import Optional
 
@@ -32,7 +33,7 @@ async def _embed_text(text: str) -> list[float]:
     logger.info(f"Embedding text: {text}")
     logfire.info(f"Embedding text: {text}")
     try:
-        embedding = await ARCTIC_CLIENT.embed_query(text, model_name=SNOWFLAKE_L_V2)
+        embedding = await ARCTIC_CLIENT.embed_query(text, model_name=EMBEDDING_MODEL)
         return embedding[0].tolist()
     except Exception as e:
         logger.error(f"Error embedding text: {e}")

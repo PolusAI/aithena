@@ -195,5 +195,3 @@ class InferenceClient:
         except grpc.RpcError as e:
             logger.error(f"RPC error: {e}")
             raise
-
-SNOWFLAKE_L_V2 = "/root/.cache/huggingface/hub/models--Snowflake--snowflake-arctic-embed-l-v2.0/snapshots/dcf86e284785c825570c5fd512ddd682b386fa3d"
