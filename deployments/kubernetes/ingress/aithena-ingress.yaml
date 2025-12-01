@@ -28,7 +28,8 @@ metadata:
 spec:
   ingressClassName: public
   rules:
-  - http:
+  - host: polus2.ncats.nih.gov
+    http:
       paths:
       # Exact match for /api/ask with extreme settings
       - path: /api/ask
@@ -96,11 +97,12 @@ metadata:
 spec:
   ingressClassName: public
   rules:
-  - http:
+  - host: polus2.ncats.nih.gov
+    http:
       paths:
       # LiteLLM with path rewriting
       - path: /litellm(/|$)(.*)
-        pathType: Prefix
+        pathType: ImplementationSpecific
         backend:
           service:
             name: litellm-service
@@ -126,11 +128,12 @@ metadata:
 spec:
   ingressClassName: public
   rules:
-  - http:
+  - host: polus2.ncats.nih.gov
+    http:
       paths:
       # Main askaithena app with path rewriting
       - path: /askaithena(/|$)(.*)
-        pathType: Prefix
+        pathType: ImplementationSpecific
         backend:
           service:
             name: ask-aithena-app-service
