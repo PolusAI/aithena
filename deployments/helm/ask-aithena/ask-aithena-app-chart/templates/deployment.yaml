@@ -44,6 +44,8 @@ spec:
         env:
         - name: APP_ENV
           value: {{ .Values.config.appEnv | quote }}
+        - name: NEXT_PUBLIC_APP_ENV
+          value: {{ .Values.config.appEnv | quote }}
         envFrom:
         - configMapRef:
             name: {{ include "ask-aithena-app-chart.fullname" . }}-config

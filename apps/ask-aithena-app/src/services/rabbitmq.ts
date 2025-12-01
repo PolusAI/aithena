@@ -300,7 +300,8 @@ export function useRabbitMQ() {
 
         return () => {
             mounted = false;
-            rabbitmqService.disconnect();
+            // Don't disconnect on unmount - let the singleton maintain the connection
+            // This prevents issues with React Strict Mode double-mounting
         };
     }, []);
 
