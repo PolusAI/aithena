@@ -1,0 +1,374 @@
+namespace: "askaithena"
+
+global:
+  litellm:
+    db:
+      name: "litellm"
+      user: "llmproxy"
+      password: "password"
+
+# -----------------------------------------------------------------------------
+# Aithena Services Chart Configuration
+# -----------------------------------------------------------------------------
+aithena-services-chart:
+  replicaCount: 1
+  image:
+    repository: camilovelezr/aithena-services
+    tag: "1.1.3"
+    pullPolicy: Always
+  service:
+    type: NodePort
+    port: 8000
+    nodePort: 32133
+  postgres:
+    # The hostname of the PostgreSQL service is dynamically generated.
+    # host: askaithena-db
+    port: 5432
+    user: AithenaAdmin
+    database: askaithena
+  secret:
+    postgresPassword: "SECRET"
+
+# -----------------------------------------------------------------------------
+# Ask-Aithena Agent Chart Configuration
+# -----------------------------------------------------------------------------
+ask-aithena-agent-chart:
+  replicaCount: 1
+  image:
+    repository: camilovelezr/ask-aithena-agent
+    tag: "1.1.5" # >=1.1.5
+    pullPolicy: Always
+  service:
+    type: NodePort
+    port: 8000
+    nodePort: 32135
+  rabbitmq:
+    defaultUser: guest
+    defaultPass: guest
+  persistence:
+    enabled: true
+    storageClassName: standard
+    accessMode: ReadOnlyMany
+    size: 0.5Gi
+    hostPath: "/prompts"
+  secret:
+    litellmApiKey: "sk-123" # change me
+  env:
+    logfire:
+      useLogfire: "false"
+    models:
+      responder:
+        model: "gpt-4.1"
+        temperature: "0.4"
+      talker:
+        model: "gpt-4.1"
+        temperature: "0.85"
+      semantics:
+        model: "gpt-4.1"
+        temperature: "0.4"
+      aegisOrchestrator:
+        model: "gpt-4.1"
+        temperature: "0.3"
+      aegisReferee:
+        model: "gpt-4.1"
+        temperature: "1"
+      shield:
+        model: "gpt-4.1"
+        temperature: "1"
+    # The URLs for the services are dynamically generated.
+    litellm:
+      url: "http://ask-aithena-litellm-chart-service:4000/v1"
+    rabbitmq:
+      url: "amqp://guest:guest@ask-aithena-rabbitmq-chart-internal:5672/"
+    database:
+      embeddingTable: "openalex.abstract_embeddings_arctic"
+    prompts:
+      directory: "/opt/prompts"
+    arctic:
+      port: "8000"
+      embeddingModel: "/root/.cache/huggingface/hub/models--Snowflake--snowflake-arctic-embed-l-v2.0/snapshots/dcf86e284785c825570c5fd512ddd682b386fa3d"
+    http:
+      timeout: "60"
+
+# -----------------------------------------------------------------------------
+# Ask-Aithena App Chart Configuration
+# -----------------------------------------------------------------------------
+ask-aithena-app-chart:
+  replicaCount: 2
+  image:
+    repository: camilovelezr/ask-aithena-app
+    tag: "1.2.0" # >=1.2.0
+    pullPolicy: Always
+  service:
+    type: NodePort
+    port: 80
+    targetPort: 3000
+    nodePort: 32136
+  config:
+    appEnv: "production"
+    # -------------------------------------------------------------------------
+    # Server-Side Configuration (Internal Kubernetes Services)
+    # -------------------------------------------------------------------------
+    # These URLs are used by the Next.js server to proxy requests to backend services
+    # They use Kubernetes internal service names that are only accessible within the cluster
+    internalApiUrl: "http://ask-aithena-ask-aithena-agent-chart-service:8000"
+    internalRabbitmqWsUrl: "ws://ask-aithena-rabbitmq-chart-internal:15674/ws"
+    
+    # -------------------------------------------------------------------------
+    # Note: Client-side URLs are now hardcoded in the application
+    # -------------------------------------------------------------------------
+    # The browser always uses:
+    #   - /api for API requests
+    #   - /rabbitmq/ws for WebSocket connections
+    # These paths are part of the application's API contract and don't change between environments
+    # -------------------------------------------------------------------------
+    
+  resources:
+    limits:
+      cpu: "1"
+      memory: 1Gi
+    requests:
+      cpu: "0.3"
+      memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+
+# -----------------------------------------------------------------------------
+# LiteLLM Chart Configuration
+# -----------------------------------------------------------------------------
+litellm-chart:
+  
+  replicaCount: 1
+  
+  image:
+    repository: ghcr.io/berriai/litellm
+    tag: "litellm_stable_release_branch-v1.75.8-stable"
+    pullPolicy: IfNotPresent
+  
+  service:
+    type: NodePort
+    port: 4000
+    targetPort: 4000
+    nodePort: 32132
+  
+  # Secret configuration
+  secret:
+    existingSecret: ""  # Leave empty to create a new secret
+    azureApiKey: "123123123"
+    azureApiBase: "https://api.openai.com/v1"
+  
+  # LiteLLM specific configuration
+  litellm: {}
+  
+  # ConfigMap configuration
+  config:
+    enabled: true
+    data:
+      model_list:
+        - model_name: gemma3:1b
+          litellm_params:
+            model: ollama_chat/gemma3:1b
+            api_base: os.environ/OLLAMA_HOST
+        - model_name: claude-4-sonnet
+          litellm_params:
+            model: vertex_ai/claude-sonnet-4@20250514
+            vertex_project: ncats-askaithena
+            vertex_location: us-east5
+            vertex_credentials: /app/vertex_credentials.json
+        - model_name: gpt-4.1
+          litellm_params:
+            model: azure/gpt-4.1
+            api_key: os.environ/AZURE_API_KEY
+            api_base: os.environ/AZURE_API_BASE
+            api_version: 2024-12-01-preview
+      general_settings:
+        master_key: "sk-123123"
+        pass_through_endpoints:
+          - path: "/memory/health"
+            target: "http://ask-aithena-aithena-services-chart-service:8000/health"
+
+  # Vertex AI configuration
+  vertex:
+    enabled: true
+    credentials: {
+      "type": "service_account",
+      "project_id": "superproject",
+      "private_key_id": "sdfadf",
+      "private_key": "-----BEGIN PRIVATE KEY-----\adfadf\n23/\a=\n-----END PRIVATE KEY-----\n",
+      "client_email": "computer@gmail.com",
+      "client_id": "5555",
+      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+      "token_uri": "https://oauth2.googleapis.com/token",
+      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+      "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/met",
+      "universe_domain": "googleapis.com"
+    }
+
+# -----------------------------------------------------------------------------
+# LiteLLM DB Chart Configuration
+# -----------------------------------------------------------------------------
+litellm-db-chart:
+  replicaCount: 1
+  image:
+    repository: postgres
+    tag: "16.4"
+    pullPolicy: IfNotPresent
+  auth: {}
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClassName: "standard"
+    hostPath:
+      enabled: true
+      path: "./data"
+  initContainer:
+    enabled: true
+    image:
+      repository: busybox
+      tag: "1.35"
+      pullPolicy: IfNotPresent
+    command:
+      - /bin/sh
+      - -c
+      - |
+        chown -R 999:999 /var/lib/postgresql/data
+        chmod -R 700 /var/lib/postgresql/data
+    securityContext:
+      runAsUser: 0
+
+# -----------------------------------------------------------------------------
+# Ollama Chart Configuration
+# -----------------------------------------------------------------------------
+ollama-chart:
+  replicaCount: 1
+  image:
+    repository: ollama/ollama
+    tag: "0.11.10"
+    pullPolicy: IfNotPresent
+  service:
+    type: NodePort
+    port: 11434
+    nodePort: 32142
+  resources:
+    gpu:
+      count: 2
+  storage:
+    enabled: true
+    size: 250Gi
+    storageClassName: standard
+    hostPath:
+      path: "./ollama"
+  env:
+    debug: "1"
+    flashAttention: "1"
+
+# -----------------------------------------------------------------------------
+# RabbitMQ Chart Configuration
+# -----------------------------------------------------------------------------
+rabbitmq-chart:
+  replicaCount: 1
+  image:
+    repository: rabbitmq
+    tag: "4.1.2-management"
+    pullPolicy: IfNotPresent
+  rabbitmq:
+    defaultUser: guest
+    defaultPass: guest
+  service:
+    external:
+      enabled: true
+      nodePort: 32154
+    management:
+      enabled: true
+      nodePort: 32144
+
+# -----------------------------------------------------------------------------
+# PostgreSQL Chart Configuration
+# -----------------------------------------------------------------------------
+postgres-chart:
+  replicaCount: 1
+  image:
+    repository: pgvector/pgvector
+    tag: pg17
+    pullPolicy: IfNotPresent
+  service:
+    type: NodePort
+    port: 5432
+    nodePort: 30632
+  postgresql:
+    database: askaithena
+    user: AithenaAdmin
+    password: "polus2" # A random password will be generated if left empty
+  persistence:
+    enabled: true
+    storageClassName: "manual"
+    size: 10Ti
+    hostPath: "./askaithena"
+    nodeAffinity:
+      required:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - polus2
+    pv:
+      create: true
+      name: postgres-pv
+      reclaimPolicy: Retain
+  resources:
+    limits:
+      cpu: "4"
+      memory: "8Gi"
+    requests:
+      cpu: "1"
+      memory: "4Gi"
+
+# -----------------------------------------------------------------------------
+# Arctic Chart Configuration
+# -----------------------------------------------------------------------------
+arctic-chart:
+  replicaCount: 1
+  image:
+    repository: camilovelezr/arctic
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  service:
+    type: NodePort
+    port: 8000
+    nodePort: 30036
+  resources:
+    requests:
+      gpu: 1
+      memory: "16Gi"
+      cpu: "4"
+    limits:
+      gpu: 1
+      memory: "32Gi"
+      cpu: "16"
+  persistence:
+    enabled: true
+    storageClassName: "manual"
+    size: 50Gi
+    pv:
+      create: true
+      name: arctic-pv
+      storage: 100Gi
+      accessModes:
+        - ReadWriteOnce
+      hostPath:
+        path: ./huggingface
+        type: DirectoryOrCreate
+      reclaimPolicy: Retain
+  shm:
+    sizeLimit: "100Gi"
+  args:
+    model: "/root/.cache/huggingface/hub/models--Snowflake--snowflake-arctic-embed-l-v2.0/snapshots/dcf86e284785c825570c5fd512ddd682b386fa3d"
+    trustRemoteCode: true
+    host: "0.0.0.0"
+    port: 8000
+    numReplicas: 3
+    task: "embed"

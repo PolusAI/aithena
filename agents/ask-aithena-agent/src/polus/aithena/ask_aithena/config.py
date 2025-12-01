@@ -97,7 +97,8 @@ AEGIS_REFEREE_TEMPERATURE = float(os.environ.get("AEGIS_REFEREE_TEMPERATURE", de
 
 ARCTIC_HOST = os.environ.get("ARCTIC_HOST", default="localhost")
 ARCTIC_PORT = os.environ.get("ARCTIC_PORT", default=8000)
-EMBEDDING_TABLE = os.environ.get("EMBEDDING_TABLE", "openalex.abstract_embeddings_arctic")
+EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", default="/root/.cache/huggingface/hub/models--Snowflake--snowflake-arctic-embed-l-v2.0/snapshots/dcf86e284785c825570c5fd512ddd682b386fa3d")
+EMBEDDING_TABLE = os.environ.get("EMBEDDING_TABLE", default="openalex.abstract_embeddings_arctic")
 SIMILARITY_N = int(os.environ.get("SIMILARITY_N", default=10))
 
 RABBITMQ_URL = os.environ.get("RABBITMQ_URL", default="amqp://guest:guest@localhost:5672/")
@@ -112,6 +113,7 @@ config_values = {
     "talker_model_params": TALKER_MODEL_PARAMS,
     "arctic_host": ARCTIC_HOST,
     "arctic_port": ARCTIC_PORT,
+    "embedding_model": EMBEDDING_MODEL,
     "embedding_table": EMBEDDING_TABLE,
     "similarity_n": SIMILARITY_N,
     "aegis_orchestrator_model": AEGIS_ORCHESTRATOR_MODEL,

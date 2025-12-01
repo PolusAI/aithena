@@ -1,4 +1,4 @@
-# Aithena Embeddings v0.1.0
+# Aithena Embeddings v0.1.1
 
 Convenience package for embedding services.
 
