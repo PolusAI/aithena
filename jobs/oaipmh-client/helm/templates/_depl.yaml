@@ -1,3 +1,0 @@
-{{- include "job-lib-chart.depl" (list . "chart.depl") -}}
-{{- define "chart.depl" -}}
-{{- end -}}
