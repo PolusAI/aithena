@@ -7,7 +7,11 @@ WORKDIR ${EXEC_DIR}
 # Set environment variables to avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-COPY jobs/get-openalex ${EXEC_DIR}/aithena/jobs/get-openalex
+COPY jobs/get-openalex/pyproject.toml ${EXEC_DIR}/aithena/jobs/get-openalex/pyproject.toml
+COPY jobs/get-openalex/src/ ${EXEC_DIR}/aithena/jobs/get-openalex/src
+COPY jobs/get-openalex/uv.lock ${EXEC_DIR}/aithena/jobs/get-openalex/uv.lock
+COPY jobs/get-openalex/README.md ${EXEC_DIR}/aithena/jobs/get-openalex/README.md
+
 COPY common ${EXEC_DIR}/aithena/common
 
 # Create data directory for SQLite
