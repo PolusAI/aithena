@@ -1,8 +1,7 @@
 # Aithena Services
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0--dev0-blue" alt="Version 1.1.3">
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="License: MIT">
+  <img src="https://img.shields.io/badge/version-1.1.3-blue" alt="Version 1.1.3">
 </p>
 
 > **Complete AI Stack with Powerful Memory Capabilities**
@@ -31,7 +30,8 @@ The diagram above shows how Aithena Services fits into a complete AI stack, prov
 
 - **Vector Database**: Built-in PostgreSQL/pgvector integration for efficient vector storage and similarity search
 - **Seamless Integration**: Works perfectly with LiteLLM for a complete AI stack
-- **Memory API**: Clean, well-documented API for storing and retrieving vector embeddings
+- **Memory API**: Clean, well-documented API for retrieving vector embeddings
+- **Advanced Filtering**: Filter works by language and publication year
 - **Docker Ready**: Deploy as a standalone service or as part of a complete stack
 - **Optimized Performance**: Efficient cosine similarity search for finding relevant content
 - **CLI Interface**: Simple command-line tool to start and manage the API server
@@ -39,7 +39,7 @@ The diagram above shows how Aithena Services fits into a complete AI stack, prov
 
 ## 🤔 Why Choose Aithena Services?
 
-- **Focus on Memory**: Specialized in vector storage and retrieval, doing one thing exceptionally well
+- **Focus on Memory**: Specialized in vector retrieval, doing one thing exceptionally well
 - **Cloud-Agnostic**: Works with any LLM provider through LiteLLM integration
 - **Simple API**: Clean, consistent interface for all memory operations
 - **Production Ready**: Designed for reliability and performance in production environments
@@ -121,28 +121,27 @@ POSTGRES_DB=your_database
 
 If you want to explicitly specify a different `.env` file location, use the `--env-file` flag when starting the server.
 
-### Store Vector Embeddings
+### Search for Similar Works
 
 ```bash
-curl -X POST http://localhost:8000/memory/pgvector/insert \
+curl -X POST http://localhost:8000/memory/pgvector/search_works \
   -H "Content-Type: application/json" \
   -d '{
-    "table_name": "my_documents",
-    "id": "doc1",
+    "table_name": "openalex.abstract_embeddings_arctic",
     "vector": [0.1, 0.2, 0.3, ...],
-    "metadata": {"title": "Important Document", "content": "This contains key information"}
+    "n": 5,
+    "languages": ["en", "de"],
+    "start_year": 2020
   }'
 ```
 
-### Search for Similar Content
+### Get Article by DOI
 
 ```bash
-curl -X POST http://localhost:8000/memory/pgvector/search \
+curl -X POST http://localhost:8000/memory/pgvector/get_article_by_doi \
   -H "Content-Type: application/json" \
   -d '{
-    "table_name": "my_documents",
-    "vector": [0.1, 0.2, 0.3, ...],
-    "n": 5
+    "doi": "10.1234/example.doi"
   }'
 ```
 
@@ -154,9 +153,9 @@ Comprehensive documentation is available to help you get started:
 - [Docker Compose Setup](docs/docker_compose.md)
 - [API Reference](docs/api.md)
 - [Memory Features](docs/memory.md)
+- [Filtering Works](docs/filter_works.md)
 - [Environment Variables](docs/env.md)
 - [Project Structure](docs/structure.md)
-- [CLI Usage](docs/cli.md)
 
 ## 🔌 Integration with LiteLLM
 
@@ -167,12 +166,3 @@ When deployed with Docker Compose, Aithena Services integrates perfectly with Li
 
 This means your application only needs to talk to a single API endpoint for both memory and LLM functionality.
 
-## 👥 Community and Support
-
-- **GitHub Issues**: Report bugs or request features
-- **Contributions**: Pull requests are welcome
-- **Documentation**: Detailed examples and guides available
-
-## 📄 License
-
-Aithena Services is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
