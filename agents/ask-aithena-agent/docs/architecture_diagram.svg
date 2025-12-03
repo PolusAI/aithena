@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200px" height="1600px" viewBox="0 0 1200 1600">
+<text x="600.0" y="30" font-family="Arial" font-size="20px" font-weight="bold" text-anchor="middle">Ask Aithena Agent Architecture</text>
+<rect x="525" y="50" width="150" height="40" rx="5" ry="5" fill="#ffffff" stroke="#333333" stroke-width="2"  />
+<text x="600.0" y="75.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">User Query</text>
+<line x1="600" y1="90" x2="600" y2="130" stroke="#333333" stroke-width="2" />
+<polygon points="600,130 595,120 605,120" fill="#333333" />
+<rect x="525" y="130" width="150" height="50" rx="5" ry="5" fill="#f3e5f5" stroke="#333333" stroke-width="2"  />
+<text x="600.0" y="160.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">API Gateway</text>
+<line x1="600" y1="180" x2="600" y2="230" stroke="#333333" stroke-width="2" />
+<polygon points="600,230 595,220 605,220" fill="#333333" />
+<rect x="450" y="230" width="300" height="120" rx="10" ry="10" fill="none" stroke="#ccc" stroke-dasharray="5,5" />
+<text x="600" y="225" font-family="Arial" font-size="12px" fill="#777" text-anchor="middle">Semantic Extraction Loop</text>
+<rect x="500" y="240" width="200" height="40" rx="5" ry="5" fill="#e1f5fe" stroke="#333333" stroke-width="2"  />
+<text x="600.0" y="265.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">Semantic Agent</text>
+<line x1="600" y1="280" x2="600" y2="300" stroke="#333333" stroke-width="2" />
+<polygon points="600,300 595,290 605,290" fill="#333333" />
+<rect x="500" y="300" width="200" height="30" rx="5" ry="5" fill="#e8f5e9" stroke="#333333" stroke-width="2"  />
+<text x="600.0" y="320.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">extract_semantics</text>
+<path d="M 700 315 L 820 315 L 820 260 L 700 260" fill="none" stroke="#666" stroke-width="2" />
+<polygon points="700,260 710,255 710,265" fill="#666" />
+<text x="825" y="287.5" font-family="Arial" font-size="11px" fill="#666">Critique &amp; Retry</text>
+<line x1="600" y1="350" x2="600" y2="400" stroke="#333333" stroke-width="2" />
+<polygon points="600,400 595,390 605,390" fill="#333333" />
+<rect x="500" y="400" width="200" height="60" rx="5" ry="5" fill="#e1f5fe" stroke="#333333" stroke-width="2"  />
+<text x="600.0" y="435.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">Context Retriever</text>
+<line x1="500" y1="430" x2="450" y2="430" stroke="#333333" stroke-width="2" />
+<polygon points="450,430 445,420 455,420" fill="#333333" />
+<rect x="300" y="410" width="150" height="40" rx="5" ry="5" fill="#f3e5f5" stroke="#333333" stroke-width="2"  />
+<text x="375.0" y="435.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">Arctic Service</text>
+<line x1="700" y1="430" x2="750" y2="430" stroke="#333333" stroke-width="2" />
+<polygon points="750,430 745,420 755,420" fill="#333333" />
+<rect x="750" y="410" width="150" height="40" rx="5" ry="5" fill="#f5f5f5" stroke="#333333" stroke-width="2" stroke-dasharray="5,5" />
+<text x="825.0" y="435.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">PGVector DB</text>
+<line x1="600" y1="460" x2="600" y2="500" stroke="#333333" stroke-width="2" />
+<polygon points="600,500 595,490 605,490" fill="#333333" />
+<rect x="525" y="500" width="150" height="40" rx="5" ry="5" fill="#ffe0b2" stroke="#333333" stroke-width="2"  />
+<text x="600.0" y="525.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">Mode Switch</text>
+<line x1="525" y1="520" x2="275" y2="580" stroke="#333333" stroke-width="2" />
+<polygon points="275,580 270,570 280,570" fill="#333333" />
+<text x="410.0" y="550.0" font-family="Arial" font-size="12px" fill="#555">/owl/ask</text>
+<rect x="200" y="580" width="150" height="400" rx="5" ry="5" fill="#fff3e0" stroke="#333333" stroke-width="2" stroke-dasharray="2,2" />
+<text x="275.0" y="610.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">Owl Mode</text>
+<text x="275.0" y="630.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">(Direct Pass)</text>
+<text x="275" y="650" font-family="Arial, sans-serif" font-size="12px" text-anchor="middle">No Reranking</text>
+<text x="275" y="670" font-family="Arial, sans-serif" font-size="12px" text-anchor="middle">Maintains DB Order</text>
+<line x1="600" y1="540" x2="550" y2="580" stroke="#333333" stroke-width="2" />
+<polygon points="550,580 545,570 555,570" fill="#333333" />
+<text x="585.0" y="560.0" font-family="Arial" font-size="12px" fill="#555">/shield/ask</text>
+<rect x="450" y="580" width="250" height="550" rx="10" ry="10" fill="#fcfcfc" stroke="#eee" />
+<text x="575" y="600" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle" font-weight="bold">Shield Mode (Batch)</text>
+<rect x="475" y="620" width="200" height="40" rx="5" ry="5" fill="#e1f5fe" stroke="#333333" stroke-width="2"  />
+<text x="575.0" y="645.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">One-Step Reranker</text>
+<line x1="575" y1="660" x2="575" y2="690" stroke="#333333" stroke-width="2" />
+<polygon points="575,690 570,680 580,680" fill="#333333" />
+<rect x="475" y="690" width="200" height="30" rx="5" ry="5" fill="#e8f5e9" stroke="#333333" stroke-width="2"  />
+<text x="575.0" y="710.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">1. define_topic</text>
+<line x1="575" y1="720" x2="575" y2="750" stroke="#333333" stroke-width="2" />
+<polygon points="575,750 570,740 580,740" fill="#333333" />
+<rect x="475" y="750" width="200" height="30" rx="5" ry="5" fill="#e8f5e9" stroke="#333333" stroke-width="2"  />
+<text x="575.0" y="770.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">2. describe_works</text>
+<text x="685" y="765" font-size="10px" fill="#666">(All Docs)</text>
+<line x1="575" y1="780" x2="575" y2="810" stroke="#333333" stroke-width="2" />
+<polygon points="575,810 570,800 580,800" fill="#333333" />
+<rect x="475" y="810" width="200" height="30" rx="5" ry="5" fill="#e8f5e9" stroke="#333333" stroke-width="2"  />
+<text x="575.0" y="830.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">3. create_prompt</text>
+<line x1="575" y1="840" x2="575" y2="870" stroke="#333333" stroke-width="2" />
+<polygon points="575,870 570,860 580,860" fill="#333333" />
+<rect x="475" y="870" width="200" height="30" rx="5" ry="5" fill="#e8f5e9" stroke="#333333" stroke-width="2"  />
+<text x="575.0" y="890.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">4. call_reranker</text>
+<line x1="575" y1="900" x2="575" y2="930" stroke="#333333" stroke-width="2" />
+<polygon points="575,930 570,920 580,920" fill="#333333" />
+<rect x="475" y="930" width="200" height="30" rx="5" ry="5" fill="#e8f5e9" stroke="#333333" stroke-width="2"  />
+<text x="575.0" y="950.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">5. verify_result</text>
+<path d="M 675 945 L 690 945 L 690 885 L 675 885" fill="none" stroke="#d32f2f" stroke-width="2" />
+<polygon points="675,885 685,880 685,890" fill="#d32f2f" />
+<text x="695" y="915" font-family="Arial" font-size="10px" fill="#d32f2f" writing-mode="tb">Retry</text>
+<line x1="675" y1="520" x2="900" y2="580" stroke="#333333" stroke-width="2" />
+<polygon points="900,580 895,570 905,570" fill="#333333" />
+<text x="797.5" y="550.0" font-family="Arial" font-size="12px" fill="#555">/aegis/ask</text>
+<rect x="800" y="580" width="350" height="550" rx="10" ry="10" fill="#fcfcfc" stroke="#eee" />
+<text x="975" y="600" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle" font-weight="bold">Aegis Mode (Iterative)</text>
+<rect x="875" y="620" width="200" height="40" rx="5" ry="5" fill="#e1f5fe" stroke="#333333" stroke-width="2"  />
+<text x="975.0" y="645.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">Aegis Orchestrator</text>
+<line x1="975" y1="660" x2="975" y2="700" stroke="#333333" stroke-width="2" />
+<polygon points="975,700 970,690 980,690" fill="#333333" />
+<rect x="820" y="700" width="310" height="300" rx="5" ry="5" fill="#fffde7" stroke="#fbc02d" stroke-dasharray="5,5" />
+<text x="975" y="690" font-family="Arial" font-size="11px" fill="#f57f17">Loop: For Each Document [i]</text>
+<rect x="875" y="720" width="200" height="40" rx="5" ry="5" fill="#e1f5fe" stroke="#333333" stroke-width="2"  />
+<text x="975.0" y="745.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">Referee Agent</text>
+<line x1="975" y1="760" x2="975" y2="790" stroke="#333333" stroke-width="1" />
+<line x1="840" y1="790" x2="1110" y2="790" stroke="#333333" stroke-width="1" />
+<line x1="855" y1="790" x2="855" y2="800" stroke="#333333" stroke-width="1" />
+<rect x="825" y="800" width="60" height="40" rx="5" ry="5" fill="#e8f5e9" stroke="#333333" stroke-width="2"  />
+<text x="855.0" y="815.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">Topic</text>
+<text x="855.0" y="835.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">(LLM)</text>
+<line x1="935" y1="790" x2="935" y2="800" stroke="#333333" stroke-width="1" />
+<rect x="905" y="800" width="60" height="40" rx="5" ry="5" fill="#e8f5e9" stroke="#333333" stroke-width="2"  />
+<text x="935.0" y="815.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">Intent</text>
+<text x="935.0" y="835.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">(LLM)</text>
+<line x1="1015" y1="790" x2="1015" y2="800" stroke="#333333" stroke-width="1" />
+<rect x="985" y="800" width="60" height="40" rx="5" ry="5" fill="#e8f5e9" stroke="#333333" stroke-width="2"  />
+<text x="1015.0" y="815.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">Noun</text>
+<text x="1015.0" y="835.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">(NLP)</text>
+<line x1="1095" y1="790" x2="1095" y2="800" stroke="#333333" stroke-width="1" />
+<rect x="1065" y="800" width="60" height="40" rx="5" ry="5" fill="#e8f5e9" stroke="#333333" stroke-width="2"  />
+<text x="1095.0" y="815.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">N-gram</text>
+<text x="1095.0" y="835.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">(NLP)</text>
+<line x1="855" y1="840" x2="855" y2="860" stroke="#333333" stroke-width="1" />
+<line x1="935" y1="840" x2="935" y2="860" stroke="#333333" stroke-width="1" />
+<line x1="1015" y1="840" x2="1015" y2="860" stroke="#333333" stroke-width="1" />
+<line x1="1095" y1="840" x2="1095" y2="860" stroke="#333333" stroke-width="1" />
+<line x1="840" y1="860" x2="1110" y2="860" stroke="#333333" stroke-width="1" />
+<line x1="975" y1="860" x2="975" y2="900" stroke="#333333" stroke-width="1" />
+<rect x="875" y="900" width="200" height="40" rx="5" ry="5" fill="#fff" stroke="#333333" stroke-width="2"  />
+<text x="975.0" y="925.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">Score &amp; Reason</text>
+<line x1="975" y1="940" x2="975" y2="970" stroke="#333333" stroke-width="2" />
+<polygon points="975,970 970,960 980,960" fill="#333333" />
+<rect x="875" y="970" width="200" height="40" rx="5" ry="5" fill="#e1f5fe" stroke="#333333" stroke-width="2"  />
+<text x="975.0" y="995.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">Aggregation &amp; Sort</text>
+<line x1="275" y1="980" x2="600" y2="1200" stroke="#333333" stroke-width="2" />
+<polygon points="600,1200 595,1190 605,1190" fill="#333333" />
+<line x1="575" y1="1130" x2="600" y2="1200" stroke="#333333" stroke-width="2" />
+<polygon points="600,1200 595,1190 605,1190" fill="#333333" />
+<line x1="975" y1="1010" x2="600" y2="1200" stroke="#333333" stroke-width="2" />
+<polygon points="600,1200 595,1190 605,1190" fill="#333333" />
+<rect x="500" y="1200" width="200" height="60" rx="5" ry="5" fill="#e1f5fe" stroke="#333333" stroke-width="2"  />
+<text x="600.0" y="1235.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">Responder Agent</text>
+<line x1="600" y1="1260" x2="600" y2="1300" stroke="#333333" stroke-width="2" />
+<polygon points="600,1300 595,1290 605,1290" fill="#333333" />
+<rect x="525" y="1300" width="150" height="50" rx="5" ry="5" fill="#ffffff" stroke="#333333" stroke-width="2"  />
+<text x="600.0" y="1330.0" font-family="Arial, sans-serif" font-size="14px" text-anchor="middle">Final Response</text>
+</svg>

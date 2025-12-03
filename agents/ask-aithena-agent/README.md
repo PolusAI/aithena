@@ -9,9 +9,10 @@ This agent is the core intelligence behind the Ask Aithena platform, a RAG (Retr
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
+- [Documentation](#documentation)
 - [Core Components](#core-components)
-  - [Agents](#agents)
-  - [Reranking Systems](#reranking-systems)
+- [Agents](#agents)
+- [Reranking Systems](#reranking-systems)
   - [Tools](#tools)
 - [API Reference](#api-reference)
 - [Configuration](#configuration)
@@ -70,6 +71,16 @@ The system offers three "protection levels" that trade off between speed and acc
 | **Owl**  | None            | Fast    | Good     | Quick lookups, simple questions  |
 | **Shield** | One-Step      | Medium  | Better   | Standard research questions      |
 | **Aegis** | Referee-Orchestrator | Slow | Best   | Critical research, complex queries |
+
+---
+
+## Documentation
+
+For a deep dive into the system's inner workings, see the [docs/](docs/) directory:
+
+- **[Architecture Diagram](docs/architecture_diagram.svg)**: A detailed visual map of the entire agent pipeline.
+- **[Technical Reference](docs/technical_reference.md)**: Comprehensive guide to agent logic, feedback loops, and data flow.
+- **[Visual Workflows](docs/README.md#3-visual-workflows-supplementary)**: Additional high-level diagrams.
 
 ---
 
