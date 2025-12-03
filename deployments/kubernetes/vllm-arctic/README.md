@@ -15,6 +15,15 @@ Download the model from HuggingFace:
 ```bash
 hf download Snowflake/snowflake-arctic-embed-l-v2.0
 ```
+You need to explore the model directory and find the path to the model.
+
+**CRITICAL CONFIGURATION NOTE**:
+It is **VERY IMPORTANT** to get the correct absolute path to the model directory.
+You will need to use this **exact same path** in two places:
+1. In this `vllm-arctic` deployment (in the `args` section as `--model`).
+2. In the `ask-aithena-agent` deployment (as the `EMBEDDING_MODEL` environment variable).
+
+If these paths do not match, the agent will fail to retrieve embeddings.
 
 ### 1. Edit pv.yaml
 
@@ -25,7 +34,7 @@ Edit the pv.yaml file with:
 
 Edit `deployment_single.yaml` or `deployment_six.yaml`:
 - `--num-replicas`: Number of model replicas per GPU.
-- `--model`: Path or ID of the model to load.
+- `--model`: Path or ID of the model to load. **This would be the path to the model you downloaded in the previous step.**
 
 ## Deployment
 

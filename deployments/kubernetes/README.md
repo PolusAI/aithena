@@ -48,6 +48,14 @@ Deploy the model serving and gateway layers.
 - **vLLM / Arctic**: Embedding services. See [vllm-arctic/README.md](./vllm-arctic/README.md)
 - **LiteLLM**: AI Gateway (depends on LiteLLM DB and Ollama). See [litellm/README.md](./litellm/README.md)
 
+## Important Note on the Arctic Model
+
+The Arctic embedding service (`vllm-arctic`) and the Ask Aithena Agent (`ask-aithena-agent`) are tightly coupled regarding the embedding model configuration.
+
+**CRITICAL**: The model path defined in the Arctic deployment (via the `--model` argument) **MUST** match exactly the `EMBEDDING_MODEL` environment variable in the Ask Aithena Agent deployment.
+- If these values do not match, the agent will request embeddings for a model that the Arctic service does not recognize or has not loaded, causing failures.
+- When updating the model in `vllm-arctic`, you **must** also update the `ask-aithena-agent` configuration.
+
 ### 3. Backend Logic
 Deploy the core application services.
 - **Aithena Services**: Core business logic. See [aithena-services/README.md](./aithena-services/README.md)
