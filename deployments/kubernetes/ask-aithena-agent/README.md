@@ -44,6 +44,7 @@ Edit the deployment.yaml file with:
 - `LITELLM_URL`: The URL of the LiteLLM service.
 - `RABBITMQ_URL`: The connection string for RabbitMQ.
 - `EMBEDDING_TABLE`: The table where the embeddings are stored.
+- `EMBEDDING_MODEL`: The path to the embedding model. **CRITICAL: This must match the `--model` path used in the `vllm-arctic` deployment.**
 - Model Configurations:
     - `RESPONDER_MODEL`
     - `TALKER_MODEL`

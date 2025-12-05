@@ -68,6 +68,8 @@ spec:
               value: "8000"
             - name: HTTPX_TIMEOUT
               value: "60"
+            - name: EMBEDDING_MODEL
+              value: "/root/.cache/huggingface/hub/models--Snowflake--snowflake-arctic-embed-l-v2.0/snapshots/dcf86e284785c825570c5fd512ddd682b386fa3d"
           readinessProbe:
             httpGet:
               path: /health
