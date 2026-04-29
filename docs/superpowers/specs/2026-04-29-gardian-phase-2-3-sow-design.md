@@ -19,9 +19,9 @@ This SOW covers Phase 2 (agentic intake) and Phase 3 (RAG-based tailoring), with
 
 **Phase 2 — Agentic intake.** Replace ad-hoc free-text patient input with an agentic-AI conversation that elicits the fields TrialGPT requires, gates on a rare-disease being identified, and produces a patient summary formatted to match TrialGPT's training-data conventions.
 
-**Phase 3 — RAG-based tailoring.** Use linked data (RDIP, where available; manual curation where not) to tailor three surfaces:
+**Phase 3 — RAG-based tailoring.** Use ontologies (MONDO/HPO) as the baseline organizing schema and linked data (RDIP, where available; manual curation where not) as overrides, to tailor three surfaces:
 
-- **Tailored intake questions:** disease-aware question banks (e.g., neurologic-specific questions for spastic paraplegia, vs. metabolic-specific for urea cycle disorders).
+- **Tailored intake questions:** the ontology-typed Pydantic patient-summary model determines which fields are relevant for the identified disease (e.g., movement/strength phenotypes for spastic paraplegia, ammonia/dietary-protein-related questions for a urea cycle disorder); the LLM phrases each in lay language.
 - **Tailored outputs:** disease-aware ranking weights and inclusion guarantees (e.g., always include Urea Cycle Disorders Consortium trials when the disease is a urea cycle disorder).
 - **Tailored UI mixins:** NCATS-funded trials surface at the top of result lists with distinct visual treatment.
 
@@ -31,9 +31,9 @@ This SOW covers Phase 2 (agentic intake) and Phase 3 (RAG-based tailoring), with
 
 | # | Workstream | Description | Skills |
 |---|---|---|---|
-| W1 | Agentic intake | State-machine agent that elicits required fields, drafts a TrialGPT-formatted patient summary, gates on rare-disease identification | Agentic-AI, prompt design |
-| W2 | RDIP discovery + ingestion | Access negotiation, schema modeling, ingestion pipeline into Postgres, gap analysis with GARD staff | Data engineering, biomedical data |
-| W3 | Tailoring policy engine | Disease → tailored question bank, output ranking weights, NCATS-funded-trial flag | Backend (Python/FastAPI), light ML |
+| W1 | Agentic intake | Agent that elicits required fields conversationally, validates them against the Pydantic patient-summary model, generates a TrialGPT-formatted summary on completion. Gates on rare-disease identification. The LLM does double duty: translates structured field requests into lay questions, and maps lay answers back to ontology-typed values with a confirmation step. | Agentic-AI, prompt design |
+| W2 | RDIP discovery + ingestion | Access negotiation, schema modeling, ingestion into Postgres. RDIP is treated as an *override / augmentation layer* on top of the ontology baseline (W3), not as a blocking dependency. Gap analysis with GARD staff identifies where RDIP adds value beyond MONDO/HPO. | Data engineering, biomedical data |
+| W3 | Tailoring policy engine | Three layers: (a) **Pydantic patient-summary model** — single source of truth, fields typed against ontology values, defines "done." (b) **Ontology baseline** — MONDO + HPO ingested into Postgres; given an extracted disease, the engine determines which phenotype/comorbidity fields are clinically relevant and should be elicited. (c) **RDIP overrides** — when present, override the ontology baseline (e.g., NCATS-funded-trial flag, PI-tailored question priorities). Ontology terms are never surfaced to the user; they are an internal organizing schema. | Backend (Python/FastAPI), biomedical-ontology familiarity, light ML |
 | W4 | Frontend tailoring | Disease-aware question rendering, NCATS-funded badges/promoted slots, per-disease ordering | Next.js / React / TypeScript |
 | W5 | Guardrails + monitoring | Jailbreak resistance, no-PII enforcement, prompt-injection screening, structured logging | Security-aware backend |
 | W6 | Continuous DALI deployment | Per-component rollout on existing K8s footprint, no separate "port" milestone | DevOps / K8s / Helm |
@@ -58,6 +58,8 @@ LLM and embedding choices remain flexible per workstream. Off-the-shelf via Lite
 
 The intake agent (W1) and tailoring policy engine (W3) will use whichever framework the supervisor selects in M1. The TrialGPT git submodule's training examples are the canonical reference for the patient-summary output format.
 
+**Ontologies (internal-only).** MONDO (Mondo Disease Ontology, ~25K terms) and HPO (Human Phenotype Ontology, ~17K terms) are ingested into Postgres from their stable releases and refreshed quarterly. Tooling: `pronto` or `oaklib`. Ontology IDs and labels never appear in the user-facing UI — they are an internal organizing schema for the Pydantic patient-summary model. The LLM is responsible for translating between ontology-typed fields and natural-language conversation in both directions, with an explicit confirmation step before committing a mapped value.
+
 ## 5. Schedule
 
 Each milestone ends with something deployed to DALI alpha. DALI deployment is continuous from M1 because the K8s footprint already exists from the Phase 1 pilot.
@@ -76,29 +78,30 @@ Selection happens in M1 with GARD staff input. The list may be revisited once at
 | Month | DALI-deployed milestone | Workstream activity |
 |---|---|---|
 | **M1 — Foundations** | Skeleton intake agent (generic, untailored) live on DALI alpha. Interface contracts written for agent ↔ RDIP ↔ frontend. Pilot disease list locked. | W1: framework selection, intake state machine v0. W2: RDIP access request, schema discovery, gap inventory. W6: CI/CD for new components. |
-| **M2 — Intake v1** | Working intake agent producing TrialGPT-formatted summaries; rare-disease gate enforced; baseline guardrails; end-to-end "type description → matched trials" works. | W1: prompt-drafting agent, field elicitation, summary formatter. W2: first RDIP ingestion (ontology + known disease–trial associations). W5: jailbreak guardrails v1, input PII redaction. |
-| **M3 — Tailored intake** | Tailored question bank wired in for the 3 pilot diseases; intake adapts based on user's disease mention. | W3: tailoring policy engine v1, disease → question-bank mapping, generic fallback. W2: continued ingestion + curation for gaps. W1: integration with policy engine. |
+| **M2 — Intake v1** | Working intake agent producing TrialGPT-formatted summaries; rare-disease gate enforced; baseline guardrails; end-to-end "type description → matched trials" works. M2 also includes a one-week spike validating ontology↔lay-language mapping accuracy on the 3 pilot diseases. | W1: prompt-drafting agent, field elicitation, summary formatter. W2: first RDIP ingestion (known disease–trial associations); access negotiation if M1 stalled. W3: MONDO + HPO ingestion tooling stood up in Postgres. W5: jailbreak guardrails v1, input PII redaction. |
+| **M3 — Tailored intake** | Ontology-driven tailored intake works for any MONDO-recognized rare disease, with hand-tested coverage and any RDIP overrides on the 3 pilot diseases. | W3: Pydantic patient-summary model finalized; MONDO + HPO ingested; ontology-baseline policy engine v1; first RDIP overrides if available. W2: continued ingestion. W1: bidirectional ontology↔lay-language translation with confirmation step. |
 | **M4 — Tailored outputs** | NCATS-funded-trial flag in results; per-disease ranking weights; frontend badges + promoted slots shipped. Default landing tab switched to "Match Patient." | W4: UI mixins, badges, custom ordering. W3: ranking weight rules, NCATS-funded source-of-truth integration. |
 | **M5 — Hardening** | Full pipeline on DALI passes guardrail + monitoring tests; structured logs flowing; end-to-end test suite covers the 3 pilot diseases. | W5: prompt-injection screening, no-PII audit, monitoring dashboards. W6: per-component health checks. |
-| **M6 — Alpha demo + stretch** | NCATS-staff-demoable alpha with 3 pilot diseases tailored and generic fallback for everything else. Demo script and internal user guide delivered. | Stretch W7 (Phase 4): feedback capture + admin export, only if buffer exists. |
+| **M6 — Alpha demo + stretch** | NCATS-staff-demoable alpha with 3 pilot diseases tailored (ontology baseline + RDIP overrides) and ontology-baseline tailoring for any other MONDO-recognized rare disease. Demo script and internal user guide delivered. | Stretch W7 (Phase 4): feedback capture + admin export, only if buffer exists. |
 
 ### 5.3 Critical path
 
-W1 (intake agent) → W3 (tailoring engine) → W4 (frontend tailoring). Slippage in W2 (RDIP) cascades into M3, so the M1 RDIP discovery sprint is the single highest-risk item and gets explicit supervisor attention.
+W1 (intake agent) → W3 (tailoring engine, ontology layer) → W4 (frontend tailoring). The ontology layer in W3 is the gating dependency for M3, not RDIP — RDIP slippage degrades to "fewer overrides for pilot diseases" rather than blocking M3. The single highest-risk item is the M2 ontology↔lay-language mapping spike: if accuracy is poor on the 3 pilot diseases, fall back to hand-curated question banks for the alpha and revisit ontology-driven generation in Phase 4.
 
 ## 6. Risks and mitigations
 
-1. **RDIP gap exceeds expectations.** *Mitigation:* M1 discovery sprint produces a written gap report. If gaps block, scope tailoring to the available subset and supplement with manual curation for the 3 pilot diseases (supervisor + GARD staff).
-2. **Hire ramp eats into M1.** *Mitigation:* M1 is intentionally weighted toward discovery and contracts (low pre-existing-context tasks); supervisor leads framework selection and interface design while hire ramps.
-3. **TrialGPT prompt-format brittleness.** *Mitigation:* TrialGPT submodule training examples are canonical from day one; the summary formatter is built and tested against those.
-4. **Pilot diseases produce unconvincing demo.** *Mitigation:* selection covers three disease categories with GARD staff input in M1; revisit at M3 when RDIP coverage is known.
-5. **Guardrails added late produce brittle alpha.** *Mitigation:* W5 attaches throughout — every workstream merges with at least baseline jailbreak + no-PII coverage.
+1. **LLM mis-mapping of lay answers to ontology values.** A user's "trouble walking" could plausibly map to several HPO terms; bad mappings degrade summary quality and trial matches. *Mitigation:* the agent always confirms back in plain language before committing a value ("So you've had stiff legs and slowness when walking — is that right?"). Mis-mappings caught at confirmation cost a turn, not a wrong summary. Validate accuracy on the 3 pilot diseases in the M2 spike; if accuracy is poor, fall back to hand-curated question banks for alpha.
+2. **RDIP gap exceeds expectations.** *Mitigation:* the ontology baseline provides usable tailoring without RDIP, so RDIP is additive rather than blocking. M1 discovery sprint still produces a written gap report; manual curation by supervisor + GARD staff for the 3 pilot diseases supplements the ontology baseline where it falls short.
+3. **Hire ramp eats into M1.** *Mitigation:* M1 is intentionally weighted toward discovery and contracts (low pre-existing-context tasks); supervisor leads framework selection and interface design while hire ramps.
+4. **TrialGPT prompt-format brittleness.** *Mitigation:* TrialGPT submodule training examples are canonical from day one; the summary formatter is built and tested against those.
+5. **Pilot diseases produce unconvincing demo.** *Mitigation:* selection covers three disease categories with GARD staff input in M1; revisit once at M3 if RDIP coverage forces a swap.
+6. **Guardrails added late produce brittle alpha.** *Mitigation:* W5 attaches throughout — every workstream merges with at least baseline jailbreak + no-PII coverage.
 
 ## 7. Deliverables
 
 - Agentic intake service on DALI (W1) with state-machine spec doc
 - RDIP ingestion pipeline + Postgres schema (W2) with gap report
-- Tailoring policy engine + question bank for 3 pilot diseases (W3) with policy spec
+- Tailoring policy engine (W3): Pydantic patient-summary model spec, MONDO + HPO ingested in Postgres with refresh tooling, ontology-baseline policy implementation, RDIP overrides for the 3 pilot diseases
 - Frontend tailoring components (W4): disease-aware question UI, NCATS badges, promoted slots
 - Guardrails configuration + monitoring dashboards (W5)
 - Helm charts / K8s manifests for each component on DALI (W6)
@@ -110,8 +113,8 @@ W1 (intake agent) → W3 (tailoring engine) → W4 (frontend tailoring). Slippag
 The alpha is considered delivered when all of the following are true:
 
 - All six in-scope workstreams are live on DALI internal alpha.
-- The 3 pilot rare diseases have working tailored intake and tailored output.
-- Generic fallback path works for any other rare disease the user enters.
+- The 3 pilot rare diseases have working tailored intake and tailored output, including any RDIP overrides curated for them.
+- Ontology-baseline tailored intake works for any MONDO-recognized rare disease the user enters (graceful degradation, not a static "generic" fallback).
 - Rare-disease gate verified: the agent refuses to draft a summary for non-rare-disease queries.
 - No-PII redaction audit passes on a 50-prompt synthetic test set.
 - Jailbreak red-team smoke test (10 adversarial prompts) passes.
