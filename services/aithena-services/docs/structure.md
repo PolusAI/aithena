@@ -12,74 +12,66 @@ Aithena Services is now focused primarily on providing vector memory functionali
 src/
 └── aithena_services/
     ├── __init__.py        - Package initialization
+    ├── cli/               - Command-line interface
+    │   ├── __init__.py
+    │   └── main.py        - CLI entry point
     ├── api/               - FastAPI endpoints
     │   ├── __init__.py
-    │   └── main.py        - API definitions
+    │   └── app.py         - API definitions and application factory
     ├── memory/            - Vector database functionality
     │   ├── __init__.py
     │   └── pgvector.py    - PostgreSQL/pgvector implementation
-    └── common/            - Shared utilities
-        ├── __init__.py
-        └── azure.py       - Azure-related helpers
+    └── config.py          - Configuration settings
 ```
 
 ## Key Components
+
+### CLI Module
+
+The `cli/` directory contains the command-line interface implementation.
+- `main.py`: Defines the `aithena-services` command and the `serve` subcommand to start the API server.
 
 ### API Module
 
 The `api/` directory contains the FastAPI application and endpoint definitions. The main API endpoints are:
 
-- `POST /memory/pgvector/search` - Search for similar vectors
-- `POST /memory/pgvector/search_work_ids` - Search for work IDs
-- `POST /memory/pgvector/search_works` - Search for works
+- `GET /health` - Health check endpoint
+- `POST /memory/pgvector/search_works` - Search for works by similarity with optional filters
+- `POST /memory/pgvector/get_article_by_doi` - Get an article by its DOI
 
-These endpoints are defined in `api/main.py` and provide the interface for interacting with the vector database.
+These endpoints are defined in `api/app.py`.
 
 ### Memory Module
 
 The `memory/` directory contains the implementation of the vector database functionality. The key file is `pgvector.py`, which provides:
 
-- Database connection management
+- Database connection management (asyncpg pool)
 - Vector similarity search functions
-- Work object handling
-- Vector operation utilities
-
-### Common Module
-
-The `common/` directory contains shared utilities and helpers used across the project, such as Azure-related helpers in `azure.py`.
+- Support for filtering by language and publication year
+- Article retrieval by DOI
 
 ## Key Files
 
-### api/main.py
+### api/app.py
 
 This file defines the FastAPI application and endpoints for the memory functionality. It includes:
 
-- FastAPI app initialization
-- CORS middleware configuration
-- API endpoint definitions for vector search operations
+- FastAPI app initialization with lifespan manager
+- Endpoint definitions for vector search and DOI lookup
 - Error handling
 
 ### memory/pgvector.py
 
 This file implements the core vector database functionality:
 
-- PostgreSQL connection handling
+- PostgreSQL connection handling with `asyncpg`
 - pgvector similarity search implementation
-- Work object serialization/deserialization
-- Vector search optimization
+- Query construction with filters (language, year)
+- DOI normalization and lookup
 
-## Development Workflow
+### cli/main.py
 
-When working on Aithena Services, focus on:
-
-1. Enhancing the memory and vector database functionality
-2. Optimizing PostgreSQL and pgvector operations
-3. Improving the API endpoints for memory operations
-
-## Integration Points
-
-When deployed with the complete stack:
-
-1. LiteLLM communicates with Aithena Services through the memory API endpoints
-2. Aithena Services connects to the PostgreSQL/pgvector database
-3. Client applications use either LiteLLM (for model operations) or Aithena Services (for memory operations) as needed 
+Entry point for the application:
+- Parses command line arguments
+- Loads environment variables
+- Starts the uvicorn server

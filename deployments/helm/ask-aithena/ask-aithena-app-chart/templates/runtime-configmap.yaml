@@ -10,5 +10,6 @@ data:
       "appEnv": "{{ .Values.config.appEnv }}",
       "nodeEnv": "production",
       "internalApiUrl": "{{ .Values.config.internalApiUrl }}",
-      "internalRabbitmqWsUrl": "{{ .Values.config.internalRabbitmqWsUrl }}"
+      "internalRabbitmqWsUrl": "{{ .Values.config.internalRabbitmqWsUrl }}",
+      "rabbitmqWsUrl": "/rabbitmq/ws"
     }

@@ -1,54 +1,13 @@
 services:
-  ollama:
-    image: ollama/ollama
-    volumes:
-      - type: bind
-        source: ${OLLAMA_DATA_PATH:-./ollama}
-        target: /root/.ollama
-    ports:
-      - "11434:11434"
-    env_file:
-      - .env
-
-  pgvector:
-    image: pgvector/pgvector:pg16
-    environment:
-      PGDATA: /var/lib/postgresql/data
-      POSTGRES_PASSWORD: ${PGVECTOR_PASSWORD:-password}
-    volumes:
-      - type: bind
-        source: ${PGVECTOR_DATA_PATH:-./pgdata}
-        target: /var/lib/postgresql/data
-    ports:
-      - "5433:5432"
-    env_file:
-      - .env
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d ${PGVECTOR_DB:-postgres} -U ${PGVECTOR_USER:-postgres}"]
-      interval: 1s
-      timeout: 5s
-      retries: 10
-  aithena-services:
-    build:
-      context: ../../  # Set to the repository root, don't modify
-      dockerfile: services/aithena-services/Dockerfile
-    env_file:
-      - .env
-    environment:
-    - "POSTGRES_HOST=pgvector"
-    - "POSTGRES_PORT=5432"
-    - "POSTGRES_DB=${PGVECTOR_DB:-postgres}"
-    - "POSTGRES_USER=${PGVECTOR_USER:-postgres}"
-    - "POSTGRES_PASSWORD=${PGVECTOR_PASSWORD:-postgres}"
-    ports:
-      - "8000:80"
-
   litellm:
-    image: ghcr.io/berriai/litellm:main-latest
+    image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.76.1-stable
     volumes:
       - type: bind
         source: ./config.yaml
         target: /app/config.yaml
+      - type: bind
+        source: ./vertex
+        target: /mnt/data/vertex
     command:
      - "--config=/app/config.yaml"
     ports:
@@ -57,7 +16,7 @@ services:
       DATABASE_URL: postgresql://${LITELLM_DB_USER:-llmproxy}:${LITELLM_DB_PASSWORD:-litellmpassword}@litellm_db:5432/litellm
       STORE_MODEL_IN_DB: "True"
       OLLAMA_HOST: http://host.docker.internal:11434
-      # LITELLM_LOG: DEBUG
+      LITELLM_LOG: DEBUG
     env_file:
       - .env
     depends_on:

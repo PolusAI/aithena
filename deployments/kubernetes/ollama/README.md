@@ -1,55 +1,84 @@
-# Ollama Kubernetes Setup
+# Ollama Deployment
 
-This directory contains Kubernetes manifests to deploy Ollama with persistent storage for models, mounting to the standard `/root/.ollama` path used by Ollama.
+This directory contains Kubernetes manifests to deploy Ollama with persistent storage for models.
 
-## Files
-- `pv.yaml`: PersistentVolume for Ollama models storage
-- `pvc.yaml`: PersistentVolumeClaim that requests storage from the PV
-- `deployment.yaml`: Deployment for the Ollama service
-- `service.yaml`: Service to expose Ollama within the cluster
-- `setup-models.sh`: Helper script to set up the models directory on the host
+## Description
+Ollama is used for local inference of Large Language Models (LLMs) like Mistral, Gemma, etc., avoiding external API dependencies for certain tasks.
 
-## Setup Instructions
+## Prerequisites
+- **Namespace**: Ensure the `box` namespace exists. Or any other namespace you want. You can use the same namespace as the other services.
+- **Hardware**: NVIDIA GPUs are highly recommended for performance.
 
-1. Run the setup script to create the host directory:
-   ```bash
-   ./setup-models.sh
-   ```
+## Deployment
 
-2. Apply the Kubernetes resources:
-   ```bash
-   kubectl apply -f services/aithena-services/kubernetes/ollama/
-   ```
+## Option A: Single Replica
 
-3. After deployment is complete, you can pull models:
-   ```bash
-   kubectl exec -it deployment/ollama -- ollama pull mistral
-   ```
+### 1. Storage
 
-## Resource Configuration
+Edit the pv.yaml file with:
+- `hostPath.path`: The path where the models are stored in the host filesystem.
 
-The deployment is configured with NO LIMITS:
-- No memory requests or limits
-- No CPU requests or limits
-- Only requesting all available NVIDIA GPUs
+### 2. Apply the Persistent Volume and Claim
+```bash
+microk8s kubectl apply -f pv.yaml
+microk8s kubectl apply -f pvc.yaml
+```
 
-This configuration allows Ollama to use all available node resources without restrictions, providing maximum performance for running large language models.
-
-**Note:** For GPU acceleration to work properly, you need to have:
-1. NVIDIA GPUs available in your cluster
-2. NVIDIA device plugin installed in your Kubernetes cluster
-
-## Model Management
-
-Since the models are stored on a persistent volume at `/data/ollama` on the host, they will persist across pod restarts. Models can be managed using standard Ollama commands:
+### 3. Apply the Service and Deployment
 
 ```bash
-# Pull a model
-kubectl exec -it deployment/ollama -- ollama pull <model-name>
+microk8s kubectl apply -f service.yaml
+microk8s kubectl apply -f deployment.yaml
+```
+
+## Verification
+Check if the pods are running:
+```bash
+microk8s kubectl -n box get pods -l app=ollama
+```
+
+## Post-Deployment: Pulling Models
+
+After the pod is running, you need to pull the models you want to use.
+
+```bash
+# Pull a model (e.g., mistral)
+microk8s kubectl -n box exec -it deployment/ollama -- ollama pull model-name
 
 # List available models
-kubectl exec -it deployment/ollama -- ollama list
+microk8s kubectl -n box exec -it deployment/ollama -- ollama list
+```
 
-# Remove a model
-kubectl exec -it deployment/ollama -- ollama rm <model-name>
-``` 
+## Option B: 6 Replicas
+
+### 1. Storage
+
+Edit the pvs.yaml file with:
+- `hostPath.path`: The path where the models are stored in the host filesystem.
+
+### 2. Apply the Persistent Volumes and Claims
+```bash
+microk8s kubectl apply -f pv.yaml
+microk8s kubectl apply -f pvc.yaml
+```
+
+### 3. Apply the Service and Deployment
+```bash
+microk8s kubectl apply -f service-headless.yaml
+microk8s kubectl apply -f statefulset.yaml
+```
+
+(A statefulset needs a headless service to work properly)
+
+### 4. Verify the Deployment
+```bash
+microk8s kubectl -n box get pods -l app=ollama
+```
+
+### 5. Pull the Models
+```bash
+microk8s kubectl -n box exec -it deployment/ollama -- ollama pull model-name
+```
+
+### 6. Optional: Add Load Balancing
+You can optionally add a load balancing service to the statefulset.

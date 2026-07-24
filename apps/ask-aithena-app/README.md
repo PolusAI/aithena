@@ -100,3 +100,11 @@ ssh -L ${NODE_PORT}:127.0.0.1:${NODE_PORT} ${USER}@{REMOTE_HOST}
 Browse to `http://localhost:${NODE_PORT}`
 
 Ask Aithena!
+
+## Next Steps
+- Integrate with login (auth)
+- Add a copy button to the response
+- Add a regenerate button to the response
+- Add edit message button to inputs
+- Support for multiple models
+- Support for message history

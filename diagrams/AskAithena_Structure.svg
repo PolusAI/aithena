@@ -1,0 +1,128 @@
+<svg width="1000" height="750" xmlns="http://www.w3.org/2000/svg">
+  <!-- Definitions for arrowheads and filters -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#f8f9fa" />
+
+  <!-- Styles -->
+  <style>
+    .node-rect { stroke: #333; stroke-width: 2px; rx: 10; ry: 10; filter: url(#shadow); }
+    .node-text { font-family: 'Segoe UI', sans-serif; font-size: 14px; font-weight: bold; text-anchor: middle; fill: white; }
+    .edge { stroke: #555; stroke-width: 2px; marker-end: url(#arrowhead); fill: none; }
+    .label-bg { fill: #f8f9fa; opacity: 0.8; }
+    .edge-label { font-family: 'Segoe UI', sans-serif; font-size: 11px; fill: #555; text-anchor: middle; }
+    
+    /* Color Classes */
+    .ui { fill: #007bff; }
+    .agent { fill: #28a745; }
+    .infra { fill: #fd7e14; }
+    .ai { fill: #6f42c1; }
+    .service { fill: #17a2b8; }
+    .db { fill: #6c757d; }
+  </style>
+
+  <!-- Title -->
+  <text x="500" y="30" font-family="'Segoe UI', sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#333">AskAithena Architecture</text>
+
+  <!-- Edges (Connections) -->
+  
+  <!-- App -> Agent -->
+  <path d="M500,90 L500,170" class="edge" />
+  
+  <!-- App -> RabbitMQ -->
+  <path d="M400,60 C300,60 280,100 280,170" class="edge" />
+  
+  <!-- Agent -> RabbitMQ -->
+  <path d="M410,200 L360,200" class="edge" />
+  
+  <!-- Agent -> Arctic -->
+  <path d="M590,200 L740,200" class="edge" />
+
+  <!-- Agent -> Litellm -->
+  <path d="M500,230 L500,320" class="edge" />
+
+  <!-- Litellm -> Ollama -->
+  <path d="M420,350 C350,350 260,380 260,470" class="edge" />
+
+  <!-- Litellm -> Aithena Services -->
+  <path d="M500,380 L500,470" class="edge" />
+
+  <!-- Litellm -> Litellm DB -->
+  <path d="M580,350 C650,350 800,380 800,470" class="edge" />
+
+  <!-- Aithena Services -> Postgres -->
+  <path d="M500,530 L500,620" class="edge" />
+
+
+  <!-- Nodes -->
+
+  <!-- Tier 1: UI -->
+  <g transform="translate(400, 30)">
+    <rect width="200" height="60" class="node-rect ui" />
+    <text x="100" y="35" class="node-text">ask-aithena-app</text>
+  </g>
+
+  <!-- Tier 2 -->
+  <g transform="translate(200, 170)">
+    <rect width="160" height="60" class="node-rect infra" />
+    <text x="80" y="35" class="node-text">rabbitmq</text>
+  </g>
+
+  <g transform="translate(410, 170)">
+    <rect width="180" height="60" class="node-rect agent" />
+    <text x="90" y="35" class="node-text">ask-aithena-agent</text>
+  </g>
+
+  <g transform="translate(740, 170)">
+    <rect width="120" height="60" class="node-rect ai" />
+    <text x="60" y="35" class="node-text">arctic</text>
+  </g>
+
+  <!-- Tier 3 -->
+  <g transform="translate(420, 320)">
+    <rect width="160" height="60" class="node-rect ai" />
+    <text x="80" y="35" class="node-text">litellm</text>
+  </g>
+
+  <!-- Tier 4 -->
+  <g transform="translate(200, 470)">
+    <rect width="120" height="60" class="node-rect ai" />
+    <text x="60" y="35" class="node-text">ollama</text>
+  </g>
+
+  <g transform="translate(410, 470)">
+    <rect width="180" height="60" class="node-rect service" />
+    <text x="90" y="35" class="node-text">aithena-services</text>
+  </g>
+
+  <g transform="translate(730, 470)">
+    <rect width="140" height="60" class="node-rect db" />
+    <text x="70" y="35" class="node-text">litellm_db</text>
+  </g>
+
+  <!-- Tier 5 -->
+  <g transform="translate(420, 620)">
+    <rect width="160" height="60" class="node-rect db" />
+    <text x="80" y="35" class="node-text">postgres</text>
+  </g>
+
+  <!-- Legends / Annotations (Optional, keeping it simple for now) -->
+  
+</svg>
+

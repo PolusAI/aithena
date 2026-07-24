@@ -135,7 +135,7 @@ The following table lists the configurable parameters of the Ask AiThena Agent c
 | `env.redis.sessionExpirationSeconds` | Session expiration time | `3600` |
 | `env.arctic.host` | Arctic service host | `arctic-direct-0-svc` |
 | `env.arctic.port` | Arctic service port | `8000` |
-
+| `env.embeddingModel` | Embedding model | `/root/.cache/huggingface/hub/models--Snowflake--snowflake-arctic-embed-l-v2.0/snapshots/dcf86e284785c825570c5fd512ddd682b386fa3d` |
 ### Health Probes
 
 | Parameter | Description | Default |

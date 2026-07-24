@@ -90,6 +90,8 @@ spec:
           value: {{ include "ask-aithena-chart.serviceName" (dict "Chart" (dict "Name" "arctic-chart") "Release" .Release) }}
         - name: ARCTIC_PORT
           value: {{ .Values.env.arctic.port | quote }}
+        - name: EMBEDDING_MODEL
+          value: {{ .Values.env.arctic.embeddingModel | quote }}
         - name: HTTPX_TIMEOUT
           value: {{ .Values.env.http.timeout | quote }}
         {{- with .Values.extraEnvVars }}

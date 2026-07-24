@@ -269,7 +269,7 @@ PGVector enables similarity search capabilities for building RAG applications:
 2. Store embeddings in the table
 3. Query similar vectors through the API
 
-For details on using PGVector, see the "Advanced Configuration" section in the full documentation.
+For details on using the memory API and PGVector features, see [Memory and Vector Database Features](memory.md) and [API Reference](api.md).
 
 ### LiteLLM UI Dashboard
 

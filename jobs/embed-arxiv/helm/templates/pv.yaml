@@ -1,6 +1,0 @@
-
-{{- if not .Values.use_existing_volume}}
-{{- include "job-lib-chart.pv" (list . "chart.pv") -}}  
-{{- end -}}
-{{- define "chart.pv" -}} {}
-{{- end -}}
