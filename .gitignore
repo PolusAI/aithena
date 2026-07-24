@@ -11,6 +11,9 @@ values.yaml
 # environment file (may contain sensitive data)
 .env
 
+# local MCP server config (contains API keys / credentials)
+.mcp.json
+
 # environment variable used in documentation
 .vars
 
