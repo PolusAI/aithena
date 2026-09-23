@@ -57,7 +57,10 @@ spec:
 
       containers:
         - name: postgres
-          image: pgvector/pgvector:pg17
+          # ParadeDB with PostgreSQL 17, pg_search (BM25), and pgvector
+          # Using explicit pg17 tag to ensure PostgreSQL 17
+          # See: https://hub.docker.com/r/paradedb/paradedb/tags
+          image: paradedb/paradedb:latest-pg17
           ports:
             - containerPort: 5432
               name: postgres

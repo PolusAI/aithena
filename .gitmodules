@@ -1,0 +1,3 @@
+[submodule "TrialGPT"]
+	path = TrialGPT
+	url = https://github.com/ncbi-nlp/TrialGPT
