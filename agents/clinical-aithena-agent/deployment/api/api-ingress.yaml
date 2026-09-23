@@ -1,0 +1,58 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: clinical-aithena-api
+  namespace: clinical-aithena
+  labels:
+    app: clinical-aithena-api
+    component: api
+  annotations:
+    # Nginx Ingress Controller annotations
+    # Rewrite /apis/ctaithena/* to /*
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    
+    # Rate limiting (adjust as needed)
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    
+    # Timeouts - extended for patient matching pipeline (can take 3-5 min)
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    
+    # WebSocket support (required for /ws/status/{session_id})
+    # The nginx-ingress controller handles Upgrade/Connection headers
+    # automatically when proxy-http-version is 1.1 (default with public class).
+spec:
+  ingressClassName: public  # Must match controller's --ingress-class=public
+  
+  # TLS configuration
+  tls:
+  - hosts:
+    - polus1.ncats.nih.gov
+    secretName: polus1-tls
+  
+  rules:
+  - host: polus1.ncats.nih.gov
+    http:
+      paths:
+      - path: /apis/ctaithena(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: clinical-aithena-api
+            port:
+              number: 80
+  
+  # Optional: Additional host for internal access
+  # - host: api.clinical-aithena.internal
+  #   http:
+  #     paths:
+  #     - path: /
+  #       pathType: Prefix
+  #       backend:
+  #         service:
+  #           name: clinical-aithena-api
+  #           port:
+  #             number: 8000
+

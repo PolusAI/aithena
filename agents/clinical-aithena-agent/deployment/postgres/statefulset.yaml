@@ -1,0 +1,166 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clinical-aithena-db
+  namespace: clinical-aithena
+spec:
+  serviceName: clinical-aithena-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clinical-aithena-db
+  template:
+    metadata:
+      labels:
+        app: clinical-aithena-db
+    spec:
+      # Init container to ensure proper permissions
+      initContainers:
+      - name: fix-permissions
+        image: busybox:1.37
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Init container: Checking PGDATA directory..."
+          if [ -z "$(ls -A /var/lib/postgresql/data 2>/dev/null)" ]; then
+            echo "PGDATA is empty, setting permissions..."
+            chown -R 999:999 /var/lib/postgresql/data
+            chmod 700 /var/lib/postgresql/data
+            echo "Permissions set successfully"
+          else
+            echo "PGDATA directory already exists"
+            ls -la /var/lib/postgresql/data
+          fi
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        securityContext:
+          runAsUser: 0  # Root needed to change ownership
+      
+      containers:
+      - name: postgres
+        # ParadeDB with PostgreSQL 17, pg_search (BM25), and pgvector
+        # Using explicit pg17 tag to ensure PostgreSQL 17
+        # Available tags: latest-pg17, latest-pg16, latest-pg15
+        # See: https://hub.docker.com/r/paradedb/paradedb/tags
+        image: paradedb/paradedb:latest-pg17
+        ports:
+        - containerPort: 5432
+          name: postgres
+        
+        # Resource allocation
+        resources:
+          limits:
+            cpu: "8"
+            memory: "16Gi"
+          requests:
+            cpu: "2"
+            memory: "8Gi"
+        
+        # Environment variables
+        env:
+        - name: POSTGRES_DB
+          value: "clinical_aithena"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: clinical-aithena-db-secret
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: clinical-aithena-db-secret
+              key: password
+        - name: PGDATA
+          value: /var/lib/postgresql/data
+        - name: POSTGRES_INITDB_ARGS
+          value: "--encoding=UTF8 --locale=en_US.utf8 --data-checksums"
+        - name: READONLY_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: clinical-aithena-db-secret
+              key: readonly_username
+        - name: READONLY_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: clinical-aithena-db-secret
+              key: readonly_password
+        
+        # Mount points
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        - name: postgres-config
+          mountPath: /etc/postgresql-common/postgresql.conf
+          subPath: postgresql.conf
+        - name: init-scripts
+          mountPath: /docker-entrypoint-initdb.d
+        - name: shared-memory
+          mountPath: /dev/shm
+        
+        # Health checks
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+            - -d
+            - clinical_aithena
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+            - -d
+            - clinical_aithena
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        # Pass custom config as arguments
+        args:
+        - -c
+        - config_file=/etc/postgresql-common/postgresql.conf
+        
+        # Security context for container
+        securityContext:
+          runAsUser: 999
+          runAsGroup: 999
+      
+      # Pod-level security context
+      securityContext:
+        fsGroup: 999
+      
+      # Volumes
+      volumes:
+      - name: postgres-config
+        configMap:
+          name: clinical-aithena-postgres-config
+      - name: init-scripts
+        configMap:
+          name: clinical-aithena-postgres-init-scripts
+          defaultMode: 0755
+      - name: shared-memory
+        emptyDir:
+          medium: Memory
+          sizeLimit: 2Gi
+  
+  # VolumeClaimTemplate for persistent storage
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: manual
+      resources:
+        requests:
+          storage: 500Gi
+

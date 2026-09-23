@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Base theme variables */
+:root {
+    color-scheme: light;
+    --foreground-rgb: 15, 23, 42;
+    --background-rgb: 255, 255, 255;
+    --primary-color: #0066cc;
+    --primary-hover: #0052a3;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    
+    /* Theme color variables for compatibility */
+    --color-background: #ffffff;
+    --color-foreground: #0f172a;
+    --color-primary: #0066cc;
+    --color-primary-foreground: #ffffff;
+    --color-secondary: #6c757d;
+    --color-secondary-foreground: #ffffff;
+    --color-muted: #f1f5f9;
+    --color-muted-foreground: #64748b;
+    --color-card: #ffffff;
+    --color-card-foreground: #0f172a;
+    --color-border: #e2e8f0;
+    --color-accent: #ffc107;
+    --color-accent-foreground: #ffffff;
+
+    --scrollbar-width: 8px;
+    --scrollbar-height: 8px;
+    --scrollbar-track-color: transparent;
+    --scrollbar-thumb-color: rgba(0, 0, 0, 0.2);
+    --scrollbar-thumb-hover-color: rgba(0, 0, 0, 0.3);
+}
+
+:root.dark {
+    color-scheme: dark;
+    --foreground-rgb: 248, 250, 252;
+    --background-rgb: 10, 14, 26;
+    --background-gradient-start: #0a0e1a;
+    --background-gradient-end: #0f1729;
+    
+    --primary-color: #00d4ff;
+    --primary-hover: #00a8cc;
+    
+    /* Theme color variables for compatibility */
+    --color-background: #0a0e1a;
+    --color-foreground: #f8fafc;
+    --color-primary: #00d4ff;
+    --color-primary-foreground: #0a0e1a;
+    --color-secondary: #1e3a5f;
+    --color-secondary-foreground: #f8fafc;
+    --color-muted: #111827;
+    --color-muted-foreground: #a8bcd4;
+    --color-card: #111827;
+    --color-card-foreground: #f8fafc;
+    --color-border: #1a2744;
+    --color-accent: #f59e0b;
+    --color-accent-foreground: #ffffff;
+    
+    --glow-color: rgba(0, 212, 255, 0.3);
+    --shadow-color: rgba(0, 212, 255, 0.1);
+    
+    --scrollbar-thumb-color: rgba(0, 212, 255, 0.15);
+    --scrollbar-thumb-hover-color: rgba(0, 212, 255, 0.25);
+}
+
+@theme inline {
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+  
+  --color-primary: var(--color-primary);
+  --color-primary-foreground: var(--color-primary-foreground);
+  
+  --color-secondary: var(--color-secondary);
+  --color-secondary-foreground: var(--color-secondary-foreground);
+  
+  --color-accent: var(--color-accent);
+  --color-accent-foreground: var(--color-accent-foreground);
+  
+  --color-muted: var(--color-muted);
+  --color-muted-foreground: var(--color-muted-foreground);
+  
+  --color-card: var(--color-card);
+  --color-card-foreground: var(--color-card-foreground);
+  
+  --color-border: var(--color-border);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Apply gradient background in dark mode */
+.dark body {
+    background: linear-gradient(135deg, var(--background-gradient-start) 0%, var(--background-gradient-end) 100%);
+    background-attachment: fixed;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Smooth transitions */
+html.theme-transitions-ready,
+html.theme-transitions-ready body,
+html.theme-transitions-ready header {
+    transition: background-color 0.2s ease;
+}
+
+html.theme-transitions-ready button,
+html.theme-transitions-ready input,
+html.theme-transitions-ready span,
+html.theme-transitions-ready div {
+    transition: color 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Custom utility classes */
+.glass-effect {
+    backdrop-filter: blur(16px);
+    background-color: rgb(255 255 255 / 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .glass-effect {
+    background-color: rgb(15 23 42 / 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Scrollbar styling */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+}
+
+::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+    height: var(--scrollbar-height);
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track-color);
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb-color);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover-color);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}

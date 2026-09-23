@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clinical-aithena-postgres-init-scripts
+  namespace: clinical-aithena
+data:
+  01-enable-extensions.sql: |
+    -- Enable required PostgreSQL extensions
+    CREATE EXTENSION IF NOT EXISTS vector;
+    CREATE EXTENSION IF NOT EXISTS pg_search;
+    CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+    CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+  02-setup-database.sql: |
+    -- Database configuration
+    ALTER DATABASE clinical_aithena SET search_path TO public;
+    ALTER DATABASE clinical_aithena SET timezone TO 'UTC';
+
+  03-create-readonly-user.sh: |
+    #!/bin/bash
+    # Create read-only service account
+    # This user can only SELECT from tables, no write operations
+    
+    set -e
+    
+    echo "Creating read-only user: $READONLY_USERNAME"
+    
+    # Create the read-only user using environment variables
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "postgres" <<-EOSQL
+      -- Create the read-only user if it doesn't exist
+      DO \$\$
+      BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$READONLY_USERNAME') THEN
+          CREATE USER $READONLY_USERNAME WITH PASSWORD '$READONLY_PASSWORD';
+          RAISE NOTICE 'User $READONLY_USERNAME created';
+        ELSE
+          RAISE NOTICE 'User $READONLY_USERNAME already exists';
+        END IF;
+      END
+      \$\$;
+      
+      -- Grant connection to database
+      GRANT CONNECT ON DATABASE clinical_aithena TO $READONLY_USERNAME;
+    EOSQL
+    
+    # Connect to clinical_aithena database to set schema permissions
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "clinical_aithena" <<-EOSQL
+      -- Grant usage on schema
+      GRANT USAGE ON SCHEMA public TO $READONLY_USERNAME;
+      
+      -- Grant SELECT on all existing tables
+      GRANT SELECT ON ALL TABLES IN SCHEMA public TO $READONLY_USERNAME;
+      
+      -- Grant SELECT on all existing sequences (for id columns)
+      GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO $READONLY_USERNAME;
+      
+      -- Set default privileges for future tables
+      -- This ensures new tables are automatically readable
+      ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+        GRANT SELECT ON TABLES TO $READONLY_USERNAME;
+      
+      ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+        GRANT SELECT ON SEQUENCES TO $READONLY_USERNAME;
+      
+      -- Revoke any write permissions (belt and suspenders)
+      REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public FROM $READONLY_USERNAME;
+    EOSQL
+    
+    echo "Read-only user $READONLY_USERNAME created successfully with SELECT-only permissions"

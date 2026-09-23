@@ -1,0 +1,177 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: clinical-aithena-updatedb
+  namespace: clinical-aithena
+  labels:
+    app: clinical-aithena
+    component: updatedb
+spec:
+  # Run daily at 2 AM UTC (adjust as needed)
+  # Format: "minute hour day month weekday"
+  # Examples:
+  #   "0 2 * * *"  = 2:00 AM UTC daily
+  #   "0 6 * * *"  = 6:00 AM UTC daily
+  #   "30 1 * * *" = 1:30 AM UTC daily
+  schedule: "0 2 * * *"
+  
+  # IMPORTANT: Prevent concurrent runs
+  # If previous job is still running, skip the new one
+  concurrencyPolicy: Forbid
+  
+  # Keep last 3 successful jobs for history/debugging
+  successfulJobsHistoryLimit: 7
+  
+  # Keep last 1 failed job for debugging
+  failedJobsHistoryLimit: 3
+  
+  # If job doesn't start within 5 minutes of scheduled time, skip it
+  startingDeadlineSeconds: 300
+  
+  jobTemplate:
+    metadata:
+      labels:
+        app: clinical-aithena-updatedb
+        component: updatedb
+    spec:
+      # Don't retry on failure (will run again next day)
+      backoffLimit: 0
+      
+      # Clean up completed pods after 7 days (604800 seconds)
+      # This allows you to see job history for the past week
+      ttlSecondsAfterFinished: 604800
+      
+      # Timeout after 4 hours (updatedb + transform + embed)
+      activeDeadlineSeconds: 14400
+      
+      template:
+        metadata:
+          labels:
+            app: clinical-aithena-updatedb
+            component: updatedb
+        spec:
+          restartPolicy: Never
+          
+          containers:
+          - name: updatedb
+            image: polusai/ctaithena-updatedb:v1.1.2
+            
+            command: ["/bin/bash", "-c"]
+            args:
+              - |
+                set -e  # Exit on any error
+                
+                export DATABASE_URL="postgresql+psycopg://${DB_USER}:${DB_PASSWORD}@clinical-aithena-db-0.clinical-aithena-db.clinical-aithena.svc.cluster.local:5432/clinical_aithena"
+                
+                echo "==========================================================================="
+                echo "Clinical Aithena Full Pipeline"
+                echo "==========================================================================="
+                echo "Start time: $(date -Iseconds)"
+                echo ""
+                
+                # Step 0: Initialize database schema
+                echo "[Step 0/4] Initializing database schema"
+                echo "---------------------------------------------------------------------------"
+                ct-aithena initdb
+                INITDB_EXIT=$?
+                
+                if [ $INITDB_EXIT -ne 0 ]; then
+                  echo "Error: initdb failed with exit code $INITDB_EXIT"
+                  exit $INITDB_EXIT
+                fi
+                
+                echo "+ Step 0 completed successfully"
+                echo ""
+                
+                # Step 1: Update database from ClinicalTrials.gov
+                echo "[Step 1/4] Downloading trials from ClinicalTrials.gov"
+                echo "---------------------------------------------------------------------------"
+                ct-aithena updatedb
+                UPDATE_EXIT=$?
+                
+                if [ $UPDATE_EXIT -ne 0 ]; then
+                  echo "Error: updatedb failed with exit code $UPDATE_EXIT"
+                  exit $UPDATE_EXIT
+                fi
+                
+                echo "+ Step 1 completed successfully"
+                echo ""
+                
+                # Step 2: Transform to TrialGPT format
+                echo "[Step 2/4] Transforming studies to TrialGPT format"
+                echo "---------------------------------------------------------------------------"
+                ct-aithena transform --incremental --batch-size 100
+                TRANSFORM_EXIT=$?
+                
+                if [ $TRANSFORM_EXIT -ne 0 ]; then
+                  echo "Error: transform failed with exit code $TRANSFORM_EXIT"
+                  exit $TRANSFORM_EXIT
+                fi
+                
+                echo "+ Step 2 completed successfully"
+                echo ""
+                
+                # Step 3: Generate embeddings
+                echo "[Step 3/4] Generating embeddings"
+                echo "---------------------------------------------------------------------------"
+                ct-aithena embed --resume --batch-size 1000 --fields both
+                EMBED_EXIT=$?
+                
+                if [ $EMBED_EXIT -ne 0 ]; then
+                  echo "Error: embed failed with exit code $EMBED_EXIT"
+                  exit $EMBED_EXIT
+                fi
+                
+                echo "+ Step 3 completed successfully"
+                echo ""
+                
+                echo "==========================================================================="
+                echo "Pipeline Complete"
+                echo "End time: $(date -Iseconds)"
+                echo "==========================================================================="
+            
+            # Database connection using internal Kubernetes DNS
+            env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: clinical-aithena-db-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: clinical-aithena-db-secret
+                  key: password
+            
+            # LiteLLM configuration for embeddings
+            - name: LITELLM_API_BASE
+              value: "http://litellm-service.box.svc.cluster.local:4000"
+            - name: LITELLM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: litellm-secret
+                  key: api-key
+                  optional: true
+            
+            # MedCPT model configuration
+            - name: MEDCPT_ARTICLE_MODEL
+              value: "medcpt-article"
+            - name: MEDCPT_QUERY_MODEL
+              value: "medcpt-query"
+            
+            # Resource allocation for full pipeline (updatedb + transform + embed)
+            # Configured for multiprocessing (ProcessPoolExecutor) and embedding generation
+            resources:
+              requests:
+                memory: "4Gi"
+                cpu: "2"
+              limits:
+                memory: "16Gi"
+                cpu: "8"
+            
+            # Logging configuration
+            # The ct-aithena CLI already has Docker-friendly tqdm output
+            # Updates every 10 seconds in non-TTY environments
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+

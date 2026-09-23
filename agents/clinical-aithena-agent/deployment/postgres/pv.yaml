@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: clinical-aithena-db-pv
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 500Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/polus1/schaubnj/clinical-aithena/agents/clinical-aithena-agent/.data"
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - polus1
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
+

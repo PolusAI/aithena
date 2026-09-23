@@ -1,0 +1,74 @@
+site_name: GARDIAN Documentation
+site_description: Documentation for GARDIAN — a rare-disease-focused clinical trial matching system
+# Empty site_url forces mkdocs to generate *relative* links (e.g.
+# "assets/style.css" instead of "/assets/style.css").  This is critical
+# because the site is mounted at different sub-paths depending on the
+# environment (local: /documentation/, K8s: /apis/ctaithena/documentation/).
+# Root-absolute paths would break behind the reverse proxy.
+site_url: ""
+use_directory_urls: true
+
+theme:
+  name: material
+  logo: assets/images/GARD_Logo.svg
+  favicon: assets/images/GARD_Logo.svg
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue grey
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue grey
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - toc.integrate
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Examples: examples.md
+  - How It Works:
+      - Overview: how-it-works/overview.md
+      - Trial Retrieval: how-it-works/retrieval.md
+      - Patient Matching: how-it-works/matching.md
+      - TrialGPT Comparison: how-it-works/trialgpt-comparison.md
+  - Data Sources:
+      - ClinicalTrials.gov: data/clinicaltrials-gov.md
+      - Embeddings: data/embeddings.md
+  - GARDIAN Application:
+      - Search Trials: application/search.md
+      - Patient Matching: application/patient-matching.md
+  - Architecture:
+      - System Overview: architecture/overview.md
+      - API: architecture/api.md

@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: clinical-aithena-api
+  namespace: clinical-aithena
+  labels:
+    app: clinical-aithena-api
+    component: api
+spec:
+  type: ClusterIP  # Internal cluster access only
+  ports:
+  - port: 80          # Service port (external)
+    targetPort: 8000  # Container port (internal)
+    protocol: TCP
+    name: http
+  selector:
+    app: clinical-aithena-api
+  sessionAffinity: None
+
+---
+# Optional: LoadBalancer service for external access
+# Uncomment if you want to expose the API externally via LoadBalancer
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: clinical-aithena-api-external
+#   namespace: clinical-aithena
+#   labels:
+#     app: clinical-aithena-api
+#     component: api
+# spec:
+#   type: LoadBalancer
+#   ports:
+#   - port: 8000
+#     targetPort: 8000
+#     protocol: TCP
+#     name: http
+#   selector:
+#     app: clinical-aithena-api
+

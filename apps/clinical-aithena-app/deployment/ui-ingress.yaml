@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: clinical-aithena-ui
+  namespace: clinical-aithena
+  labels:
+    app: clinical-aithena-ui
+    component: ui
+  annotations:
+    # Nginx Ingress Controller annotations
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    
+    # Configuration for Next.js
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    
+    # Timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+spec:
+  ingressClassName: public  # Must match controller's --ingress-class=public
+  
+  # TLS configuration
+  tls:
+  - hosts:
+    - polus1.ncats.nih.gov
+    secretName: polus1-tls
+  
+  rules:
+  - host: polus1.ncats.nih.gov
+    http:
+      paths:
+      - path: /gardian
+        pathType: Prefix
+        backend:
+          service:
+            name: clinical-aithena-ui
+            port:
+              number: 80
+

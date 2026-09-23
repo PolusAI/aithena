@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clinical-aithena-postgres-config
+  namespace: clinical-aithena
+data:
+  postgresql.conf: |
+    # Essential PostgreSQL Configuration for Clinical Aithena
+    
+    # Memory Settings
+    shared_buffers = 4GB
+    effective_cache_size = 12GB
+    maintenance_work_mem = 2GB
+    work_mem = 256MB
+    
+    # Connection Settings
+    listen_addresses = '*'
+    max_connections = 100
+    
+    # Performance
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    
+    # WAL Settings
+    max_wal_size = 4GB
+    min_wal_size = 1GB
+    
+    # Query Planner
+    default_statistics_target = 100
+    
+    # Logging (queries > 1 second)
+    log_min_duration_statement = 1000
+    log_checkpoints = on
+    log_lock_waits = on
+    
+    # Required Extensions
+    shared_preload_libraries = 'pg_stat_statements,vector'
+    
+    # pg_stat_statements
+    pg_stat_statements.track = all

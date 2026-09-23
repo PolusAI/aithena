@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  pgvector:
+    # ParadeDB with PostgreSQL 17, pg_search (BM25), and pgvector
+    # Using explicit pg17 tag to ensure PostgreSQL 17
+    # See: https://hub.docker.com/r/paradedb/paradedb/tags
+    image: paradedb/paradedb:latest-pg17
+    container_name: clinical-aithena-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: CHANGE_ME_POSTGRES_PASSWORD
+      POSTGRES_DB: clinical_aithena
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d clinical_aithena"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - clinical-aithena-network
+
+  rabbitmq:
+    image: rabbitmq:4.1.2-management
+    container_name: clinical-aithena-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_PLUGINS_DIR: /opt/rabbitmq/plugins
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # Management UI
+      - "15674:15674"  # Web STOMP (browser WebSocket)
+    volumes:
+      - rabbitmq_plugins:/etc/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - clinical-aithena-network
+    # Enable Web STOMP plugin on first start
+    entrypoint: >
+      bash -c "rabbitmq-plugins enable --offline rabbitmq_web_stomp &&
+               docker-entrypoint.sh rabbitmq-server"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clinical-aithena-api
+    environment:
+      # Database connection (uses service name 'pgvector' for docker networking)
+      DATABASE_URL: postgresql+psycopg://postgres:CHANGE_ME_POSTGRES_PASSWORD@pgvector:5432/clinical_aithena
+      
+      # RabbitMQ connection
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq/
+      
+      # LLM configuration (LiteLLM proxy)
+      LLM_MODEL: ${LLM_MODEL:-gpt-4.1}
+      LLM_API_BASE: ${LLM_API_BASE:-http://polus1.ncats.nih.gov/apis/litellm}
+      LLM_API_KEY: ${LLM_API_KEY}
+      
+      # MedCPT embedding service (uses same LiteLLM proxy)
+      LITELLM_API_BASE: ${LLM_API_BASE:-http://polus1.ncats.nih.gov/apis/litellm}
+      LITELLM_API_KEY: ${LLM_API_KEY}
+      MEDCPT_ARTICLE_MODEL: ${MEDCPT_ARTICLE_MODEL:-medcpt-article}
+      MEDCPT_QUERY_MODEL: ${MEDCPT_QUERY_MODEL:-medcpt-query}
+      
+      # API configuration
+      API_TITLE: Clinical Aithena API
+      API_VERSION: 0.1.0
+      API_DESCRIPTION: API for querying clinical trials data
+      
+      # CORS configuration (adjust for production)
+      CORS_ORIGINS: "*"
+    ports:
+      - "8000:8000"
+    depends_on:
+      pgvector:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - clinical-aithena-network
+    # Uncomment for development with live code reloading
+    # volumes:
+    #   - ./src:/app/src:ro
+
+volumes:
+  pgvector_data:
+    driver: local
+  rabbitmq_plugins:
+    driver: local
+
+networks:
+  clinical-aithena-network:
+    driver: bridge

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clinical-aithena-ui-config
+  namespace: clinical-aithena
+  labels:
+    app: clinical-aithena-ui
+    component: ui
+data:
+  # Node environment
+  NODE_ENV: "production"
+  
+  # Optional: Disable telemetry
+  NEXT_TELEMETRY_DISABLED: "1"
+  
+  # Note: NEXT_PUBLIC_API_URL must be set at Docker build time,
+  # not at runtime. See build.sh for details.
+

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: clinical-aithena
+  labels:
+    name: clinical-aithena
+    environment: production
+

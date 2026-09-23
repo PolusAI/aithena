@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clinical-aithena-api-config
+  namespace: clinical-aithena
+  labels:
+    app: clinical-aithena-api
+    component: api
+data:
+  # API Metadata
+  API_TITLE: "Clinical Aithena API"
+  API_VERSION: "0.1.0"
+  API_DESCRIPTION: "API for querying clinical trials data"
+  API_ROOT_PATH: "/apis/ctaithena"  # Required for correct URLs behind Nginx ingress
+  
+  # CORS Configuration
+  # In production, replace with specific domains (comma-separated)
+  # Example: "https://app.example.com,https://www.example.com"
+  CORS_ORIGINS: "*"
+  
+  # RabbitMQ (reuse shared instance in box namespace)
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq-service.box.svc.cluster.local:5672/"
+  
+  # LLM Configuration (reuse shared LiteLLM proxy in box namespace)
+  LLM_MODEL: "gpt-4.1"
+  LLM_API_BASE: "http://litellm-service.box.svc.cluster.local:4000/v1"
+  
+  # MedCPT embedding models (served via LiteLLM)
+  LITELLM_API_BASE: "http://litellm-service.box.svc.cluster.local:4000/v1"
+  MEDCPT_ARTICLE_MODEL: "medcpt-article"
+  MEDCPT_QUERY_MODEL: "medcpt-query"
+
